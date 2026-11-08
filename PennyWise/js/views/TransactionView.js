@@ -228,3 +228,9 @@ addHandlerActions(handlers) {
         handlers.onDelete(deleteBtn.dataset.id);
         return;
       }
+
+      const exportBtn = e.target.closest('#btn-export-csv');
+      if (exportBtn && handlers.onExportCSV) {
+        handlers.onExportCSV();
+      }
+    });
