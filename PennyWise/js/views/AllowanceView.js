@@ -214,3 +214,72 @@ class AllowanceView extends View {
       </div>
     `;
   }
+
+addHandlerActions(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      const resetBtn = e.target.closest('#btn-reset-allowance');
+      if (resetBtn) {
+        const form = this._parentElement.querySelector('#form-add-allowance');
+        if (form) {
+          form.reset();
+          this.hideError();
+          const dateInput = form.querySelector('#allowance-date');
+          if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        return;
+      }
+
+      const editBtn = e.target.closest('.btn-edit');
+      if (editBtn && handlers.onEdit) {
+        handlers.onEdit(editBtn.dataset.id);
+        return;
+      }
+
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (deleteBtn && handlers.onDelete) {
+        handlers.onDelete(deleteBtn.dataset.id);
+      }
+    });
+
+    this._parentElement.addEventListener('submit', (e) => {
+      if (e.target.id !== 'form-add-allowance') return;
+      e.preventDefault();
+
+      const form = e.target;
+      const amountInput = form.querySelector('#allowance-amount');
+      const descInput = form.querySelector('#allowance-desc');
+      const categorySelect = form.querySelector('#allowance-category');
+      const methodSelect = form.querySelector('#allowance-method');
+      const dateInput = form.querySelector('#allowance-date');
+
+      const rawAmount = amountInput.value.trim();
+      const rawDesc = descInput.value.trim();
+      const amount = parseFloat(rawAmount);
+
+      if (!rawDesc) {
+        this.showError('Description is required. Please specify where this allowance came from.');
+        descInput.focus();
+        return;
+      }
+
+      if (rawAmount === '' || isNaN(amount) || amount <= 0) {
+        this.showError('Please enter a valid allowance amount greater than ₱0.00.');
+        amountInput.focus();
+        return;
+      }
+
+      this.hideError();
+
+      handlers.onAdd({
+        type: 'income',
+        amount: Number(amount.toFixed(2)),
+        description: rawDesc,
+        category: categorySelect.value || 'Weekly Allowance',
+        paymentMethod: methodSelect?.value || 'Cash',
+        date: dateInput.value || new Date().toISOString().split('T')[0],
+      });
+    });
+  }
+
