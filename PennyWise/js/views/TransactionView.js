@@ -244,3 +244,21 @@ addHandlerActions(handlers) {
         handlers.onFilter({ sortBy: e.target.value });
       }
     });
+
+  this._parentElement.addEventListener('input', (e) => {
+      if (e.target.id === 'tx-search-input') {
+        const val = e.target.value;
+        handlers.onSearch(val);
+        // Preserve cursor focus after re-render
+        const input = this._parentElement.querySelector('#tx-search-input');
+        if (input) {
+          input.focus();
+          input.setSelectionRange(val.length, val.length);
+        }
+      }
+    });
+  }
+}
+
+export default new TransactionView();
+
