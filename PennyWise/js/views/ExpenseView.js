@@ -217,4 +217,34 @@ class ExpenseView extends View {
     `;
   }
 
-  
+  addHandlerActions(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      const resetBtn = e.target.closest('#btn-reset-expense');
+      if (resetBtn) {
+        const form = this._parentElement.querySelector('#form-add-expense');
+        if (form) {
+          form.reset();
+          this.hideError();
+          const dateInput = form.querySelector('#expense-date');
+          if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        return;
+      }
+
+      const editBtn = e.target.closest('.btn-edit');
+      if (editBtn && handlers.onEdit) {
+        handlers.onEdit(editBtn.dataset.id);
+        return;
+      }
+
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (deleteBtn && handlers.onDelete) {
+        handlers.onDelete(deleteBtn.dataset.id);
+      }
+    });
+
+    this._parentElement.addEventListener('submit', (e) => {
+      if (e.target.id !== 'form-add-expense') return;
+      e.preventDefault();
