@@ -212,3 +212,19 @@ class TransactionView extends View {
       </div>
     `;
   }
+
+addHandlerActions(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.btn-edit');
+      if (editBtn && handlers.onEdit) {
+        handlers.onEdit(editBtn.dataset.id);
+        return;
+      }
+
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (deleteBtn && handlers.onDelete) {
+        handlers.onDelete(deleteBtn.dataset.id);
+        return;
+      }
