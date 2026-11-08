@@ -223,5 +223,55 @@ class ProfileView extends View {
       </div>
     `;
   }
+  addHandlerProfile(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-profile-export')) {
+        handlers.onExportCSV();
+      } else if (e.target.closest('#btn-profile-clear')) {
+        handlers.onClearData();
+      } else if (e.target.closest('#btn-profile-logout')) {
+        handlers.onLogout();
+      }
+    });
+
+    this._parentElement.addEventListener('submit', (e) => {
+      if (e.target.id !== 'form-edit-profile') return;
+      e.preventDefault();
+
+      const form = e.target;
+      const selectedColor = form.querySelector('input[name="prof-avatar-color"]:checked')?.value || '#2563eb';
+
+      const updates = {
+        fullName: form.querySelector('#prof-fullname')?.value || '',
+        studentId: form.querySelector('#prof-student-id')?.value || '',
+        email: form.querySelector('#prof-email')?.value || '',
+        course: form.querySelector('#prof-course')?.value || '',
+        university: form.querySelector('#prof-university')?.value || '',
+        allowanceCycle: form.querySelector('#prof-cycle')?.value || 'Weekly',
+        budgetGoal: form.querySelector('#prof-budget')?.value || 1500,
+        avatarColor: selectedColor,
+        newPassword: form.querySelector('#prof-password')?.value || '',
+      };
+
+      handlers.onUpdateProfile(updates);
+    });
+  }
+
+  showAlert(msg, type = 'error') {
+    const box = document.querySelector('#profile-alert-box');
+    if (!box) return;
+    box.innerHTML = `
+      <div class="alert alert-${type}">
+        <span>${this.escapeHTML(msg)}</span>
+      </div>
+    `;
+    box.classList.remove('hidden');
+  }
+}
+
+export default new ProfileView();
+
 
   
