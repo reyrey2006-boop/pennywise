@@ -1,0 +1,5029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PennyWise — Student Allowance & Expense Management System</title>
+  <style>
+/**
+ * style.css
+ * Production Stylesheet for PennyWise — Student Allowance & Expense Management System
+ * 
+ * Includes:
+ * 1. Authentication Pages (Login & Register split-screen layout)
+ * 2. Application Shell (Left Sidebar Navigation Menu + Sticky Top Bar + Responsive Mobile Drawer)
+ * 3. Page 1: Financial Dashboard (4 Summary Cards, Category Progress Bars, Recent Activity Feed)
+ * 4. Page 2 & 3: Allowance Manager & Expense Tracker (Summary Banners, Forms, Dedicated Tables)
+ * 5. Page 4: Transaction History (Filter/Sort/Search Toolbar, Subtotal Bar, CSV Export)
+ * 6. Page 5: Student Profile & Settings (Student ID Card, Avatar Swatches, Profile Editor)
+ * 7. Modals, Toasts & Responsive Media Queries
+ */
+
+/* ==========================================================================
+   1. CSS Variables & Reset
+   ========================================================================== */
+:root {
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-primary: #0f172a;
+  --color-primary-light: #1e293b;
+  --color-brand: #2563eb;
+  --color-brand-hover: #1d4ed8;
+  --color-brand-light: #eff6ff;
+
+  --color-income: #10b981;
+  --color-income-hover: #059669;
+  --color-income-bg: #ecfdf5;
+  --color-income-border: #a7f3d0;
+
+  --color-expense: #ef4444;
+  --color-expense-hover: #dc2626;
+  --color-expense-bg: #fef2f2;
+  --color-expense-border: #fecaca;
+
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+
+  --color-bg-page: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f8fafc;
+
+  --color-text-main: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-light: #94a3b8;
+  --color-border: #e2e8f0;
+
+  --sidebar-width: 268px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+  --shadow-xl: 0 20px 30px -8px rgba(15, 23, 42, 0.18);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-bg-page);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   2. Authentication Screen (Login & Registration)
+   ========================================================================== */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  background-color: var(--color-primary);
+}
+
+.auth-wrapper {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  width: 100%;
+  min-height: 100vh;
+}
+
+@media (max-width: 920px) {
+  .auth-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+.auth-hero {
+  background: radial-gradient(circle at top left, #1e3a8a 0%, #0f172a 70%);
+  color: #ffffff;
+  padding: 3rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+@media (max-width: 920px) {
+  .auth-hero {
+    padding: 2rem 1.5rem;
+  }
+}
+
+.auth-hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-icon-lg {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}
+
+.auth-brand-name {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.auth-brand-name span {
+  color: #60a5fa;
+}
+
+.auth-brand-tag {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  display: block;
+}
+
+.auth-hero-content {
+  max-width: 520px;
+  margin: 2.5rem 0;
+}
+
+.auth-hero-heading {
+  font-size: 2.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.auth-hero-lead {
+  font-size: 1rem;
+  color: #cbd5e1;
+  margin-bottom: 2rem;
+}
+
+.auth-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.auth-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+.auth-feature-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.auth-feature-item strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.15rem;
+}
+
+.auth-feature-item p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.auth-hero-footer {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.auth-card-panel {
+  background-color: var(--color-bg-page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.auth-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--radius-xl);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--color-bg-page);
+  padding: 0.3rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+}
+
+.auth-tab {
+  background: none;
+  border: none;
+  padding: 0.65rem;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.auth-tab.active {
+  background-color: #ffffff;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-form-header {
+  margin-bottom: 1.25rem;
+}
+
+.auth-form-header h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.auth-form-header p {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.auth-switch-prompt {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--color-brand);
+  font-weight: 700;
+  font-family: var(--font-main);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   3. App Shell: Sidebar Navigation Menu & Topbar
+   ========================================================================== */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 60;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.25s ease;
+}
+
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.25rem 1rem;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.sidebar-title span {
+  color: #60a5fa;
+}
+
+.sidebar-subtitle {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.6rem;
+  cursor: pointer;
+}
+
+/* Sidebar Wallet Box */
+.sidebar-wallet-card {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  margin: 1.15rem 0;
+}
+
+.wallet-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  display: block;
+}
+
+.wallet-amount {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #34d399;
+  display: block;
+  margin: 0.15rem 0 0.35rem;
+}
+
+.wallet-amount.text-danger {
+  color: #f87171;
+}
+
+.wallet-cycle-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-sm);
+}
+
+.sidebar-menu-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  padding: 0 0.65rem;
+  margin-bottom: 0.4rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background-color: var(--color-brand);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.nav-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item-label {
+  flex: 1;
+}
+
+.nav-item-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
+.nav-badge-green {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+}
+
+.nav-badge-rose {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.nav-badge-neutral {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sidebar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-user-card:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.user-meta {
+  overflow: hidden;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.btn-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  font-family: var(--font-main);
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-logout:hover {
+  background-color: var(--color-expense);
+  color: #ffffff;
+}
+
+/* Main Content Area & Top Bar */
+.app-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-topbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.topbar-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1.2;
+}
+
+.topbar-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.topbar-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.topbar-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.65rem 0.3rem 0.3rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-subtle);
+  cursor: pointer;
+  font-family: var(--font-main);
+  transition: border-color 0.15s ease;
+}
+
+.topbar-profile-pill:hover {
+  border-color: var(--color-brand);
+}
+
+.user-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-username {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Mobile Responsive Sidebar Drawer */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  z-index: 55;
+}
+
+@media (max-width: 960px) {
+  .app-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+  }
+  .app-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+  .sidebar-close-btn {
+    display: block;
+  }
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+  .app-topbar {
+    padding: 0.85rem 1.25rem;
+  }
+  .topbar-quick-actions {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   4. Page Viewport & Shared Containers
+   ========================================================================== */
+.page-viewport {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.75rem 2rem 3rem;
+}
+
+@media (max-width: 768px) {
+  .page-viewport {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+}
+
+.page-section {
+  animation: fadeInPage 0.2s ease;
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   5. Dashboard Page Components
+   ========================================================================== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1150px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metric-card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.card-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.card-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-income {
+  background-color: var(--color-income-bg);
+  color: var(--color-income-hover);
+}
+
+.icon-expense {
+  background-color: var(--color-expense-bg);
+  color: var(--color-expense-hover);
+}
+
+.icon-summary {
+  background-color: var(--color-brand-light);
+  color: var(--color-brand);
+}
+
+.card-value {
+  font-family: var(--font-mono);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+}
+
+.balance-value { color: var(--color-text-main); }
+.income-value { color: var(--color-income-hover); }
+.expense-value { color: var(--color-expense-hover); }
+.summary-value { color: var(--color-primary); }
+
+.card-subtext {
+  font-size: 0.775rem;
+  color: var(--color-text-muted);
+}
+
+.formula-code {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  background-color: var(--color-bg-page);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+}
+
+.status-explanation {
+  font-size: 0.75rem;
+  margin-top: 0.45rem;
+  font-weight: 600;
+}
+
+.card-balance.status-positive { border-left: 4px solid var(--color-income); }
+.card-balance.status-positive .status-explanation { color: var(--color-income-hover); }
+
+.card-balance.status-warning { border-left: 4px solid var(--color-warning); }
+.card-balance.status-warning .status-explanation { color: #b45309; }
+
+.card-balance.status-negative { border-left: 4px solid var(--color-expense); background-color: #fffafb; }
+.card-balance.status-negative .status-explanation { color: var(--color-expense-hover); }
+
+.status-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.status-badge.status-positive { background-color: var(--color-income-bg); color: var(--color-income-hover); }
+.status-badge.status-warning { background-color: var(--color-warning-bg); color: #b45309; }
+.status-badge.status-negative { background-color: var(--color-expense-bg); color: var(--color-expense-hover); }
+
+.budget-progress-mini {
+  width: 100%;
+  height: 6px;
+  background-color: var(--color-bg-page);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 0.3rem 0 0.45rem;
+}
+
+.budget-progress-bar {
+  height: 100%;
+  background-color: var(--color-brand);
+  border-radius: var(--radius-full);
+}
+
+.budget-progress-bar.bar-danger {
+  background-color: var(--color-expense);
+}
+
+/* Dashboard Split Grid */
+.dashboard-split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .dashboard-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-primary);
+}
+
+.section-title-icon {
+  color: var(--color-brand);
+}
+
+.panel-body {
+  padding: 1.25rem 1.35rem;
+}
+
+.panel-body.no-padding {
+  padding: 0;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-brand);
+  font-family: var(--font-main);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.breakdown-item-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+}
+
+.breakdown-item-name {
+  font-weight: 600;
+}
+
+.breakdown-item-figures {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.percentage-pill {
+  color: var(--color-text-muted);
+  margin-left: 0.25rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-bg-page);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border-radius: var(--radius-full);
+}
+
+.progress-fill.fill-green {
+  background: linear-gradient(90deg, #34d399, #059669);
+}
+
+.progress-fill.fill-rose {
+  background: linear-gradient(90deg, #f87171, #dc2626);
+}
+
+/* Recent Transactions List */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+   divide-y: 1px solid var(--color-border);
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recent-item:last-child {
+  border-bottom: none;
+}
+
+.recent-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recent-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.dot-green { background-color: var(--color-income); }
+.dot-rose { background-color: var(--color-expense); }
+
+.recent-desc {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.recent-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.recent-amount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   6. Dedicated Allowance & Expense Pages
+   ========================================================================== */
+.page-summary-banner {
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  color: #ffffff;
+}
+
+@media (max-width: 700px) {
+  .page-summary-banner {
+    grid-template-columns: 1fr;
+  }
+}
+
+.banner-green {
+  background: linear-gradient(135deg, #065f46, #047857);
+}
+
+.banner-rose {
+  background: linear-gradient(135deg, #991b1b, #b91c1c);
+}
+
+.banner-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.banner-stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.banner-stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.page-split-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .page-split-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.page-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+/* Forms */
+.form-card {
+  padding: 1.5rem;
+}
+
+.card-accent-green { border-top: 4px solid var(--color-income); }
+.card-accent-rose { border-top: 4px solid var(--color-expense); }
+
+.form-card-header {
+  margin-bottom: 1.25rem;
+}
+
+.form-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.form-heading {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.form-subheading {
+  font-size: 0.825rem;
+  color: var(--color-text-muted);
+}
+
+.form-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.badge-green {
+  background-color: var(--color-income-bg);
+  color: var(--color-income-hover);
+  border: 1px solid var(--color-income-border);
+}
+
+.badge-rose {
+  background-color: var(--color-expense-bg);
+  color: var(--color-expense-hover);
+  border: 1px solid var(--color-expense-border);
+}
+
+.entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 540px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary-light);
+}
+
+.required { color: var(--color-expense); }
+
+.form-hint {
+  font-size: 0.72rem;
+  color: var(--color-text-light);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+  color: var(--color-text-main);
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.input-with-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-prefix {
+  position: absolute;
+  left: 0.85rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.input-with-prefix .form-control {
+  padding-left: 2rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+/* ==========================================================================
+   7. Buttons
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+}
+
+.btn-lg {
+  padding: 0.8rem 1.25rem;
+  font-size: 0.95rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--color-brand);
+  color: #ffffff;
+}
+.btn-primary:hover { background-color: var(--color-brand-hover); }
+
+.btn-green {
+  background-color: var(--color-income);
+  color: #ffffff;
+}
+.btn-green:hover { background-color: var(--color-income-hover); }
+
+.btn-green-soft {
+  background-color: var(--color-income-bg);
+  color: var(--color-income-hover);
+  border-color: var(--color-income-border);
+}
+.btn-green-soft:hover { background-color: #d1fae5; }
+
+.btn-rose {
+  background-color: var(--color-expense);
+  color: #ffffff;
+}
+.btn-rose:hover { background-color: var(--color-expense-hover); }
+
+.btn-rose-soft {
+  background-color: var(--color-expense-bg);
+  color: var(--color-expense-hover);
+  border-color: var(--color-expense-border);
+}
+.btn-rose-soft:hover { background-color: #fee2e2; }
+
+.btn-rose-outline {
+  background-color: transparent;
+  color: var(--color-expense);
+  border-color: var(--color-expense-border);
+}
+.btn-rose-outline:hover { background-color: var(--color-expense-bg); }
+
+.btn-secondary {
+  background-color: var(--color-bg-page);
+  color: var(--color-text-main);
+  border-color: var(--color-border);
+}
+.btn-secondary:hover { background-color: #e2e8f0; }
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-icon:hover { background-color: var(--color-bg-page); color: var(--color-primary); }
+.btn-icon.btn-delete:hover { background-color: var(--color-expense-bg); color: var(--color-expense); }
+.btn-icon.btn-edit:hover { background-color: var(--color-brand-light); color: var(--color-brand); }
+
+/* ==========================================================================
+   8. Transaction History Page & Data Tables
+   ========================================================================== */
+.history-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 800px) {
+  .history-summary-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.history-stat-item {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-stat-item span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.history-stat-item strong {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  margin-top: 0.15rem;
+}
+
+.table-card {
+  padding: 1.25rem;
+}
+
+.transaction-toolbar {
+  margin-bottom: 1.15rem;
+}
+
+.toolbar-controls-full {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 220px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--color-text-light);
+  pointer-events: none;
+}
+
+.search-field {
+  padding-left: 2.15rem;
+}
+
+.filter-select {
+  width: auto;
+  min-width: 155px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.data-table th {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.tx-row:last-child td { border-bottom: none; }
+.tx-row:hover { background-color: var(--color-bg-subtle); }
+
+.tx-cell-date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.tx-cell-desc {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.category-tag {
+  display: inline-block;
+  background-color: var(--color-bg-page);
+  color: var(--color-primary-light);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+}
+
+.method-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.type-pill {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.tx-amount-income { color: var(--color-income-hover); font-family: var(--font-mono); }
+.tx-amount-expense { color: var(--color-expense-hover); font-family: var(--font-mono); }
+
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.text-muted { color: var(--color-text-muted); font-size: 0.85rem; }
+
+.action-buttons-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.empty-state, .empty-panel-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--color-text-muted);
+}
+
+.empty-panel-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   9. Student Profile Page
+   ========================================================================== */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.student-id-card {
+  overflow: hidden;
+}
+
+.student-card-banner {
+  height: 84px;
+}
+
+.student-card-body {
+  padding: 0 1.5rem 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.student-avatar-xl {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-full);
+  border: 4px solid #ffffff;
+  margin: -38px auto 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  box-shadow: var(--shadow-md);
+}
+
+.student-card-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.student-card-course {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.student-id-pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: var(--color-brand-light);
+  color: var(--color-brand);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 1.25rem;
+}
+
+.student-info-list {
+  text-align: left;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.student-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  gap: 0.5rem;
+}
+
+.info-label {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.info-val {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-align: right;
+}
+
+.account-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.color-swatch-option {
+  cursor: pointer;
+  position: relative;
+}
+
+.color-swatch-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.color-swatch {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.color-swatch-option input:checked + .color-swatch {
+  transform: scale(1.15);
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+/* ==========================================================================
+   10. Alerts, Modals & Toasts
+   ========================================================================== */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.825rem;
+  font-weight: 600;
+}
+
+.alert-error {
+  background-color: var(--color-expense-bg);
+  color: var(--color-expense-hover);
+  border: 1px solid var(--color-expense-border);
+}
+
+.alert-success {
+  background-color: var(--color-income-bg);
+  color: var(--color-income-hover);
+  border: 1px solid var(--color-income-border);
+}
+
+.form-alert-box {
+  margin-bottom: 0.5rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal-card {
+  background-color: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 1.15rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.toast-stack {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  border-left: 4px solid var(--color-brand);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast-success { border-left-color: var(--color-income); }
+.toast-error { border-left-color: var(--color-expense); }
+.toast-fade-out { opacity: 0; transform: translateY(10px); }
+
+  </style>
+<!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- ========================================================================
+       1. AUTHENTICATION CONTAINER (Login & Registration Pages)
+       Shown when user is signed out
+       ======================================================================== -->
+  <div id="auth-container" class="auth-screen">
+    <!-- Populated dynamically by AuthView.js -->
+  </div>
+
+  <!-- ========================================================================
+       2. MAIN APPLICATION SHELL (Sidebar Menu + Topbar + Multi-Page Views)
+       Shown when user is signed in
+       ======================================================================== -->
+  <div id="app-shell" class="app-shell hidden">
+    <!-- Mobile Drawer Backdrop -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+    <!-- Left Sidebar Menu (Populated by NavigationView.js) -->
+    <aside id="app-sidebar" class="app-sidebar">
+      <!-- Navigation menu links & wallet card -->
+    </aside>
+
+    <!-- Right Content Area -->
+    <div class="app-main-area">
+      <!-- Top Header Bar (Populated by NavigationView.js) -->
+      <header id="app-topbar" class="app-topbar">
+        <!-- Page title, quick action buttons & profile pill -->
+      </header>
+
+      <!-- Multi-Page Content Viewport -->
+      <main class="page-viewport">
+        <!-- PAGE 1: Financial Dashboard (Member 1 - DashboardView.js) -->
+        <section id="page-dashboard" class="page-section">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 2: Allowance Manager (Member 2 - AllowanceView.js) -->
+        <section id="page-allowance" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 3: Expense Tracker (Member 3 - ExpenseView.js) -->
+        <section id="page-expense" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 4: Transaction History (Member 4 - TransactionView.js) -->
+        <section id="page-transactions" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 5: Student Profile & Settings (ProfileView.js) -->
+        <section id="page-profile" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       3. EDIT TRANSACTION MODAL DIALOG
+       ======================================================================== -->
+  <div id="edit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="edit-modal-title" class="modal-title">Edit Transaction</h3>
+        <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="form-edit-transaction" class="modal-body entry-form" novalidate>
+        <div id="edit-error-box" class="form-alert-box hidden"></div>
+
+        <div class="form-group">
+          <label for="edit-amount" class="form-label">Amount (₱) <span class="required">*</span></label>
+          <div class="input-with-prefix">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="edit-amount" class="form-control" step="0.01" min="0.01" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-desc" class="form-label">Description <span class="required">*</span></label>
+          <input type="text" id="edit-desc" class="form-control" maxlength="80" required />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit-category" class="form-label">Category</label>
+            <select id="edit-category" class="form-control"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-method" class="form-label">Payment Method</label>
+            <select id="edit-method" class="form-control">
+              <option value="Cash">Cash</option>
+              <option value="GCash">GCash</option>
+              <option value="Maya">Maya</option>
+              <option value="Bank Transfer">Bank Transfer / Card</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-date" class="form-label">Date</label>
+          <input type="date" id="edit-date" class="form-control" required />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btn-cancel-edit" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="btn-save-edit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       4. IN-PAGE CONFIRMATION MODAL DIALOG
+       ======================================================================== -->
+  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="confirm-modal-title" class="modal-title">Confirm Action</h3>
+        <button type="button" id="btn-close-confirm-modal" class="btn-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message" class="confirm-modal-text">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-confirm" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="btn-proceed-confirm" class="btn btn-rose">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-stack" aria-live="polite"></div>
+
+  <!-- Application Controller Entry Point (ES Module) -->
+  <script>
+
+(function() {
+  'use strict';
+
+  // --- BASE VIEW ---
+  /**
+ * View.js
+ * Base View Class for PennyWise MVC Framework
+ * 
+ * Implements standard View layer mechanics:
+ * - Rendering templates to parent containers
+ * - Currency formatting in Philippine Peso (₱)
+ * - Readable date formatting
+ * - HTML escaping for security
+ */
+
+class View {
+  _data;
+
+  /**
+   * Render the received data to the DOM
+   * @param {Object|Array} data The data to be rendered
+   */
+  render(data) {
+    this._data = data;
+    const markup = this._generateMarkup();
+    this._clear();
+    if (this._parentElement) {
+      this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+  }
+
+  /**
+   * Clear parent container innerHTML
+   * @protected
+   */
+  _clear() {
+    if (this._parentElement) {
+      this._parentElement.innerHTML = '';
+    }
+  }
+
+  /**
+   * Format numbers as Philippine Peso (₱)
+   * @param {number} amount 
+   * @returns {string} e.g., "₱1,500.00"
+   */
+  formatCurrency(amount) {
+    const num = Number(amount) || 0;
+    const isNeg = num < 0;
+    const absVal = Math.abs(num);
+    return (isNeg ? '-₱' : '₱') + absVal.toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  /**
+   * Format ISO date string (YYYY-MM-DD) into readable format
+   * @param {string} dateString 
+   * @returns {string} e.g., "Nov 4, 2026"
+   */
+  formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+    }
+    const fallback = new Date(dateString);
+    if (isNaN(fallback.getTime())) return dateString;
+    return fallback.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+
+  /**
+   * Escape HTML special characters to prevent XSS
+   * @param {string} str 
+   * @returns {string}
+   */
+  escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /**
+   * Get initials from full name
+   * @param {string} name 
+   * @returns {string}
+   */
+  getInitials(name) {
+    if (!name) return 'ST';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+}
+
+
+  // --- MODEL LAYER ---
+  /**
+ * model.js
+ * Production Model Layer for PennyWise — Student Allowance & Expense Management System
+ * 
+ * Capabilities:
+ * - Multi-user Registration, Login, Logout & Session Persistence
+ * - Editable Student Profile (Full Name, Student ID, Course/Year, University, Budget Goal, Password)
+ * - Multi-page Navigation Route State ('dashboard', 'allowance', 'expense', 'transactions', 'profile')
+ * - Per-user Transaction Ledger (Income & Expense CRUD)
+ * - Automatic Derived Financial Calculations (Balance, Total Allowance, Total Expenses, Daily Average, Savings Rate, Category Breakdown)
+ * - CSV Export & Account Data Management
+ */
+
+const USERS_STORAGE_KEY = 'pennywise_users_db_v2';
+const SESSION_STORAGE_KEY = 'pennywise_active_session_v2';
+const TX_STORAGE_PREFIX = 'pennywise_tx_user_';
+
+const state = {
+  currentUser: null,        // null when logged out, or user object when logged in
+  currentPage: 'dashboard', // 'dashboard' | 'allowance' | 'expense' | 'transactions' | 'profile'
+  authMode: 'login',        // 'login' | 'register'
+  transactions: [],
+  totals: {
+    totalIncome: 0,
+    totalExpenses: 0,
+    balance: 0,
+    transactionCount: 0,
+    allowanceCount: 0,
+    expenseCount: 0,
+    savingsRate: 0,
+    budgetGoal: 2000,
+    budgetRemaining: 2000,
+    budgetUsedPercent: 0,
+  },
+  categoryBreakdown: [],
+  allowanceBreakdown: [],
+  currentFilter: {
+    type: 'all',
+    category: 'all',
+    searchQuery: '',
+    sortBy: 'newest', // 'newest' | 'oldest' | 'highest' | 'lowest'
+  },
+};
+
+/* ==========================================================================
+   1. Storage Helpers
+   ========================================================================== */
+const getStoredUsers = function () {
+  try {
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (err) {
+    console.error('Error reading users from localStorage:', err);
+  }
+  return [];
+};
+
+const saveStoredUsers = function (users) {
+  try {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  } catch (err) {
+    console.error('Error saving users to localStorage:', err);
+  }
+};
+
+const persistCurrentUserTransactions = function () {
+  if (!state.currentUser) return;
+  try {
+    const txKey = TX_STORAGE_PREFIX + state.currentUser.id;
+    localStorage.setItem(txKey, JSON.stringify(state.transactions));
+  } catch (err) {
+    console.error('Error saving user transactions:', err);
+  }
+};
+
+const loadUserTransactions = function (userId) {
+  try {
+    const txKey = TX_STORAGE_PREFIX + userId;
+    const raw = localStorage.getItem(txKey);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        state.transactions = parsed;
+        calculateTotals();
+        return;
+      }
+    }
+  } catch (err) {
+    console.error('Error loading user transactions:', err);
+  }
+  state.transactions = [];
+  persistCurrentUserTransactions();
+  calculateTotals();
+};
+
+/* ==========================================================================
+   2. Authentication & Session Management
+   ========================================================================== */
+
+/**
+ * Restore active session on app boot
+ */
+const initSession = function () {
+  const users = getStoredUsers();
+  try {
+    const sessionUserId = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (sessionUserId) {
+      const found = users.find((u) => u.id === sessionUserId);
+      if (found) {
+        state.currentUser = { ...found };
+        loadUserTransactions(found.id);
+        return;
+      }
+    }
+  } catch (err) {
+    console.error('Session restore failed:', err);
+  }
+  // If no session exists yet, stays null (shows Login screen)
+  state.currentUser = null;
+  state.transactions = [];
+};
+
+/**
+ * Register a brand new student account
+ * @param {Object} userData { fullName, email, password, studentId, course, university, allowanceCycle, budgetGoal }
+ */
+const registerUser = function (userData) {
+  const fullName = (userData.fullName || '').trim();
+  const email = (userData.email || '').trim().toLowerCase();
+  const password = userData.password || '';
+
+  if (!fullName) throw new Error('Please enter your full name.');
+  if (!email || !email.includes('@')) throw new Error('Please enter a valid email address.');
+  if (password.length < 6) throw new Error('Password must be at least 6 characters long.');
+
+  const users = getStoredUsers();
+  const existing = users.find((u) => u.email.toLowerCase() === email);
+  if (existing) {
+    throw new Error('An account with this email already exists. Please log in instead.');
+  }
+
+  const colors = ['#2563eb', '#059669', '#7c3aed', '#db2777', '#d97706', '#0891b2'];
+  const randomColor = colors[users.length % colors.length];
+
+  const newUser = {
+    id: 'usr-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+    fullName,
+    email,
+    password,
+    studentId: (userData.studentId || '').trim(),
+    course: (userData.course || 'College Student').trim(),
+    university: (userData.university || 'Davao Oriental State University').trim(),
+    allowanceCycle: userData.allowanceCycle || 'Weekly',
+    budgetGoal: Number(userData.budgetGoal) > 0 ? Number(userData.budgetGoal) : 1500,
+    avatarColor: randomColor,
+    createdAt: new Date().toISOString().split('T')[0],
+  };
+
+  users.push(newUser);
+  saveStoredUsers(users);
+
+  state.currentUser = { ...newUser };
+  state.transactions = [];
+  persistCurrentUserTransactions();
+  calculateTotals();
+
+  try {
+    localStorage.setItem(SESSION_STORAGE_KEY, newUser.id);
+  } catch (e) {}
+
+  state.currentPage = 'dashboard';
+  return state.currentUser;
+};
+
+/**
+ * Log in an existing student account
+ * @param {string} email 
+ * @param {string} password 
+ */
+const loginUser = function (email, password) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!cleanEmail) throw new Error('Please enter your email address.');
+  if (!password) throw new Error('Please enter your password.');
+
+  const users = getStoredUsers();
+  const user = users.find((u) => u.email.toLowerCase() === cleanEmail && u.password === password);
+
+  if (!user) {
+    throw new Error('Invalid email or password. Please check your credentials or create a new account.');
+  }
+
+  state.currentUser = { ...user };
+  loadUserTransactions(user.id);
+  state.currentPage = 'dashboard';
+
+  try {
+    localStorage.setItem(SESSION_STORAGE_KEY, user.id);
+  } catch (e) {}
+
+  return state.currentUser;
+};
+
+/**
+ * Log out current student
+ */
+const logoutUser = function () {
+  state.currentUser = null;
+  state.transactions = [];
+  state.currentPage = 'dashboard';
+  state.authMode = 'login';
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch (e) {}
+};
+
+/**
+ * Update current user's profile information
+ * @param {Object} profileUpdates 
+ */
+const updateUserProfile = function (profileUpdates) {
+  if (!state.currentUser) throw new Error('No active user session.');
+
+  const fullName = (profileUpdates.fullName || '').trim();
+  const email = (profileUpdates.email || '').trim().toLowerCase();
+
+  if (!fullName) throw new Error('Full Name cannot be empty.');
+  if (!email || !email.includes('@')) throw new Error('Please provide a valid email address.');
+
+  const users = getStoredUsers();
+  const emailConflict = users.find(
+    (u) => u.email.toLowerCase() === email && u.id !== state.currentUser.id
+  );
+  if (emailConflict) {
+    throw new Error('That email address is already in use by another account.');
+  }
+
+  const budgetGoal = Number(profileUpdates.budgetGoal);
+  if (isNaN(budgetGoal) || budgetGoal < 0) {
+    throw new Error('Spending budget goal must be a valid non-negative number.');
+  }
+
+  const updatedUser = {
+    ...state.currentUser,
+    fullName,
+    email,
+    studentId: (profileUpdates.studentId || '').trim(),
+    course: (profileUpdates.course || '').trim(),
+    university: (profileUpdates.university || '').trim(),
+    allowanceCycle: profileUpdates.allowanceCycle || state.currentUser.allowanceCycle,
+    budgetGoal: Number(budgetGoal.toFixed(2)),
+    avatarColor: profileUpdates.avatarColor || state.currentUser.avatarColor,
+  };
+
+  if (profileUpdates.newPassword && profileUpdates.newPassword.trim() !== '') {
+    if (profileUpdates.newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters.');
+    }
+    updatedUser.password = profileUpdates.newPassword;
+  }
+
+  const idx = users.findIndex((u) => u.id === state.currentUser.id);
+  if (idx !== -1) {
+    users[idx] = updatedUser;
+    saveStoredUsers(users);
+  }
+
+  state.currentUser = updatedUser;
+  calculateTotals();
+  return state.currentUser;
+};
+
+/* ==========================================================================
+   3. Navigation & View State
+   ========================================================================== */
+const setPage = function (pageName) {
+  const validPages = ['dashboard', 'allowance', 'expense', 'transactions', 'profile'];
+  if (validPages.includes(pageName)) {
+    state.currentPage = pageName;
+  }
+};
+
+const setAuthMode = function (mode) {
+  state.authMode = mode === 'register' ? 'register' : 'login';
+};
+
+/* ==========================================================================
+   4. Automatic Financial Calculations (Derived Values)
+   ========================================================================== */
+const calculateTotals = function () {
+  let income = 0;
+  let expenses = 0;
+  let allowanceCount = 0;
+  let expenseCount = 0;
+  const expByCat = {};
+  const incByCat = {};
+
+  state.transactions.forEach((tx) => {
+    const amt = Number(tx.amount) || 0;
+    if (tx.type === 'income') {
+      income += amt;
+      allowanceCount++;
+      const cat = tx.category || 'Other Allowance';
+      incByCat[cat] = (incByCat[cat] || 0) + amt;
+    } else {
+      expenses += amt;
+      expenseCount++;
+      const cat = tx.category || 'Other Expenses';
+      expByCat[cat] = (expByCat[cat] || 0) + amt;
+    }
+  });
+
+  const balance = income - expenses;
+  const savingsRate = income > 0 ? Math.max(0, ((income - expenses) / income) * 100) : 0;
+  const budgetGoal = state.currentUser ? Number(state.currentUser.budgetGoal) || 1500 : 1500;
+  const budgetRemaining = budgetGoal - expenses;
+  const budgetUsedPercent = budgetGoal > 0 ? Math.min(100, (expenses / budgetGoal) * 100) : 0;
+
+  state.totals = {
+    totalIncome: Number(income.toFixed(2)),
+    totalExpenses: Number(expenses.toFixed(2)),
+    balance: Number(balance.toFixed(2)),
+    transactionCount: state.transactions.length,
+    allowanceCount,
+    expenseCount,
+    savingsRate: Number(savingsRate.toFixed(1)),
+    budgetGoal: Number(budgetGoal.toFixed(2)),
+    budgetRemaining: Number(budgetRemaining.toFixed(2)),
+    budgetUsedPercent: Number(budgetUsedPercent.toFixed(1)),
+  };
+
+  state.categoryBreakdown = Object.keys(expByCat)
+    .map((category) => {
+      const total = expByCat[category];
+      const percentage = expenses > 0 ? (total / expenses) * 100 : 0;
+      return {
+        category,
+        total: Number(total.toFixed(2)),
+        percentage: Number(percentage.toFixed(1)),
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+
+  state.allowanceBreakdown = Object.keys(incByCat)
+    .map((category) => {
+      const total = incByCat[category];
+      const percentage = income > 0 ? (total / income) * 100 : 0;
+      return {
+        category,
+        total: Number(total.toFixed(2)),
+        percentage: Number(percentage.toFixed(1)),
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+};
+
+/* ==========================================================================
+   5. Transaction CRUD Operations
+   ========================================================================== */
+const addTransaction = function (txData) {
+  const amount = Number(txData.amount);
+  if (isNaN(amount) || amount <= 0) {
+    throw new Error('Transaction amount must be a positive number greater than ₱0.00.');
+  }
+  const description = (txData.description || '').trim();
+  if (!description) {
+    throw new Error('Transaction description cannot be empty.');
+  }
+
+  const newTx = {
+    id: 'tx-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+    type: txData.type === 'income' ? 'income' : 'expense',
+    amount: Number(amount.toFixed(2)),
+    description,
+    category: txData.category || (txData.type === 'income' ? 'Weekly Allowance' : 'Food & Drinks'),
+    paymentMethod: txData.paymentMethod || 'Cash',
+    date: txData.date || new Date().toISOString().split('T')[0],
+    createdAt: Date.now(),
+  };
+
+  state.transactions.unshift(newTx);
+  calculateTotals();
+  persistCurrentUserTransactions();
+  return newTx;
+};
+
+const editTransaction = function (id, updatedData) {
+  const index = state.transactions.findIndex((tx) => tx.id === id);
+  if (index === -1) {
+    throw new Error('Transaction record not found.');
+  }
+
+  const amount = Number(updatedData.amount);
+  if (isNaN(amount) || amount <= 0) {
+    throw new Error('Amount must be greater than ₱0.00.');
+  }
+  const description = (updatedData.description || '').trim();
+  if (!description) {
+    throw new Error('Description cannot be empty.');
+  }
+
+  state.transactions[index] = {
+    ...state.transactions[index],
+    amount: Number(amount.toFixed(2)),
+    description,
+    category: updatedData.category || state.transactions[index].category,
+    paymentMethod: updatedData.paymentMethod || state.transactions[index].paymentMethod || 'Cash',
+    date: updatedData.date || state.transactions[index].date,
+    updatedAt: Date.now(),
+  };
+
+  calculateTotals();
+  persistCurrentUserTransactions();
+  return state.transactions[index];
+};
+
+const deleteTransaction = function (id) {
+  const initialLen = state.transactions.length;
+  state.transactions = state.transactions.filter((tx) => tx.id !== id);
+  if (state.transactions.length === initialLen) {
+    throw new Error('Transaction could not be found to delete.');
+  }
+  calculateTotals();
+  persistCurrentUserTransactions();
+  return true;
+};
+
+const getTransactionById = function (id) {
+  return state.transactions.find((tx) => tx.id === id) || null;
+};
+
+const getAllowances = function () {
+  return state.transactions.filter((tx) => tx.type === 'income');
+};
+
+const getExpenses = function () {
+  return state.transactions.filter((tx) => tx.type === 'expense');
+};
+
+const clearAllUserTransactions = function () {
+  state.transactions = [];
+  calculateTotals();
+  persistCurrentUserTransactions();
+};
+
+/* ==========================================================================
+   6. Filtering, Sorting & CSV Export
+   ========================================================================== */
+const setFilter = function (filterUpdates) {
+  state.currentFilter = {
+    ...state.currentFilter,
+    ...filterUpdates,
+  };
+};
+
+const getFilteredTransactions = function () {
+  const { type, category, searchQuery, sortBy } = state.currentFilter;
+
+  const filtered = state.transactions.filter((tx) => {
+    if (type && type !== 'all' && tx.type !== type) return false;
+    if (category && category !== 'all' && tx.category !== category) return false;
+    if (searchQuery && searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase().trim();
+      const matchDesc = tx.description.toLowerCase().includes(q);
+      const matchCat = tx.category.toLowerCase().includes(q);
+      const matchMethod = (tx.paymentMethod || '').toLowerCase().includes(q);
+      if (!matchDesc && !matchCat && !matchMethod) return false;
+    }
+    return true;
+  });
+
+  return filtered.sort((a, b) => {
+    if (sortBy === 'oldest') {
+      return new Date(a.date) - new Date(b.date) || a.createdAt - b.createdAt;
+    }
+    if (sortBy === 'highest') {
+      return b.amount - a.amount;
+    }
+    if (sortBy === 'lowest') {
+      return a.amount - b.amount;
+    }
+    // default: newest
+    return new Date(b.date) - new Date(a.date) || b.createdAt - a.createdAt;
+  });
+};
+
+const getAllUniqueCategories = function () {
+  const set = new Set();
+  state.transactions.forEach((tx) => {
+    if (tx.category) set.add(tx.category);
+  });
+  return Array.from(set).sort();
+};
+
+const exportTransactionsCSV = function () {
+  const rows = [
+    ['Date', 'Type', 'Category', 'Description', 'Payment Method', 'Amount (PHP)'],
+  ];
+  state.transactions.forEach((tx) => {
+    const sign = tx.type === 'income' ? '' : '-';
+    rows.push([
+      tx.date,
+      tx.type === 'income' ? 'Allowance' : 'Expense',
+      `"${(tx.category || '').replace(/"/g, '""')}"`,
+      `"${(tx.description || '').replace(/"/g, '""')}"`,
+      `"${(tx.paymentMethod || 'Cash').replace(/"/g, '""')}"`,
+      `${sign}${tx.amount.toFixed(2)}`,
+    ]);
+  });
+  return rows.map((r) => r.join(',')).join('\n');
+};
+
+const model = {
+  state,
+  initSession,
+  registerUser,
+  loginUser,
+  logoutUser,
+  updateUserProfile,
+  setPage,
+  setAuthMode,
+  calculateTotals,
+  addTransaction,
+  editTransaction,
+  deleteTransaction,
+  getTransactionById,
+  getAllowances,
+  getExpenses,
+  clearAllUserTransactions,
+  setFilter,
+  getFilteredTransactions,
+  getAllUniqueCategories,
+  exportTransactionsCSV
+};
+
+
+  // --- VIEW LAYERS ---
+  /**
+ * AuthView.js
+ * Authentication View Layer (Login & Registration Pages)
+ * 
+ * Responsibilities:
+ * - Renders full-page Login and Registration interface when user is signed out.
+ * - Supports tab switching between Sign In and Create Account.
+ * - Validates registration and login inputs.
+ */
+
+
+
+class AuthView extends View {
+  _parentElement = document.querySelector('#auth-container');
+
+  _generateMarkup() {
+    const mode = this._data?.authMode || 'login';
+    const isRegister = mode === 'register';
+
+    return `
+      <div class="auth-wrapper">
+        <!-- Left Feature Showcase Panel -->
+        <div class="auth-hero">
+          <div class="auth-hero-brand">
+            <div class="brand-icon-lg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="28" height="28">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="auth-brand-name">Penny<span>Wise</span></h1>
+              <span class="auth-brand-tag">Student Allowance & Expense Tracker</span>
+            </div>
+          </div>
+
+          <div class="auth-hero-content">
+            <h2 class="auth-hero-heading">Take full control of your college allowance.</h2>
+            <p class="auth-hero-lead">
+              Track daily expenses, monitor your weekly or monthly stipend, and always know exactly how much money you have left.
+            </p>
+
+            <div class="auth-feature-list">
+              <div class="auth-feature-item">
+                <div class="auth-feature-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <strong>Real-Time Balance Calculation</strong>
+                  <p>Automatically computes your remaining balance and spending limit.</p>
+                </div>
+              </div>
+
+              <div class="auth-feature-item">
+                <div class="auth-feature-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <strong>Dedicated Multi-Page Workspace</strong>
+                  <p>Separate pages for Dashboard, Allowances, Expenses, History & Student Profile.</p>
+                </div>
+              </div>
+
+              <div class="auth-feature-item">
+                <div class="auth-feature-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <strong>Private Browser Storage</strong>
+                  <p>Your records are safely stored per account in localStorage—even offline.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-hero-footer">
+            Davao Oriental State University (DOrSU) • MVC Web Application
+          </div>
+        </div>
+
+        <!-- Right Auth Card Panel -->
+        <div class="auth-card-panel">
+          <div class="auth-card">
+            <!-- Mode Switcher Tabs -->
+            <div class="auth-tabs">
+              <button type="button" class="auth-tab ${!isRegister ? 'active' : ''}" data-mode="login">
+                Sign In
+              </button>
+              <button type="button" class="auth-tab ${isRegister ? 'active' : ''}" data-mode="register">
+                Create Account
+              </button>
+            </div>
+
+            <div id="auth-error-box" class="form-alert-box hidden"></div>
+
+            ${isRegister ? this._generateRegisterForm() : this._generateLoginForm()}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _generateLoginForm() {
+    return `
+      <div class="auth-form-header">
+        <h3>Welcome Back!</h3>
+        <p>Log in to access your student allowance dashboard.</p>
+      </div>
+
+      <form id="form-login" class="entry-form" novalidate>
+        <div class="form-group">
+          <label for="login-email" class="form-label">Email Address <span class="required">*</span></label>
+          <input 
+            type="email" 
+            id="login-email" 
+            class="form-control" 
+            placeholder="e.g. student@dorsu.edu.ph" 
+            required 
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="login-password" class="form-label">Password <span class="required">*</span></label>
+          <input 
+            type="password" 
+            id="login-password" 
+            class="form-control" 
+            placeholder="Enter your password" 
+            required 
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-login-submit">
+          Sign In to PennyWise
+        </button>
+
+      </form>
+
+      <p class="auth-switch-prompt">
+        Don't have an account yet? 
+        <button type="button" class="link-btn" data-switch-mode="register">Register a student account</button>
+      </p>
+    `;
+  }
+
+  _generateRegisterForm() {
+    return `
+      <div class="auth-form-header">
+        <h3>Create Student Account</h3>
+        <p>Set up your profile and budget preferences in seconds.</p>
+      </div>
+
+      <form id="form-register" class="entry-form" novalidate>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="reg-fullname" class="form-label">Full Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="reg-fullname" 
+              class="form-control" 
+              placeholder="e.g. Maria Santos" 
+              required 
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="reg-student-id" class="form-label">Student ID No.</label>
+            <input 
+              type="text" 
+              id="reg-student-id" 
+              class="form-control" 
+              placeholder="e.g. 2026-0194" 
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email" class="form-label">Email Address <span class="required">*</span></label>
+          <input 
+            type="email" 
+            id="reg-email" 
+            class="form-control" 
+            placeholder="e.g. maria@dorsu.edu.ph" 
+            required 
+          />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="reg-course" class="form-label">Course & Year</label>
+            <input 
+              type="text" 
+              id="reg-course" 
+              class="form-control" 
+              placeholder="e.g. BSIT - 2nd Year" 
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="reg-budget" class="form-label">Spending Limit Goal (₱)</label>
+            <input 
+              type="number" 
+              id="reg-budget" 
+              class="form-control" 
+              placeholder="1500" 
+              value="1500"
+              min="100"
+              step="50"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-university" class="form-label">School / University</label>
+          <input 
+            type="text" 
+            id="reg-university" 
+            class="form-control" 
+            value="Davao Oriental State University (DOrSU)" 
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password" class="form-label">Password (min. 6 chars) <span class="required">*</span></label>
+          <input 
+            type="password" 
+            id="reg-password" 
+            class="form-control" 
+            placeholder="Create a password" 
+            required 
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-register-submit">
+          Create My Account
+        </button>
+      </form>
+
+      <p class="auth-switch-prompt">
+        Already have an account? 
+        <button type="button" class="link-btn" data-switch-mode="login">Sign in here</button>
+      </p>
+    `;
+  }
+
+  /**
+   * Bind authentication events (Login, Register, Mode Switch)
+   */
+  addHandlerAuth(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      // Switch mode tab
+      const tabBtn = e.target.closest('.auth-tab');
+      if (tabBtn) {
+        handlers.onSwitchMode(tabBtn.dataset.mode);
+        return;
+      }
+
+      // Switch mode link
+      const switchBtn = e.target.closest('[data-switch-mode]');
+      if (switchBtn) {
+        handlers.onSwitchMode(switchBtn.dataset.switchMode);
+        return;
+      }
+
+    });
+
+    this._parentElement.addEventListener('submit', (e) => {
+      if (e.target.id === 'form-login') {
+        e.preventDefault();
+        const email = document.querySelector('#login-email')?.value || '';
+        const password = document.querySelector('#login-password')?.value || '';
+        handlers.onLogin(email, password);
+      } else if (e.target.id === 'form-register') {
+        e.preventDefault();
+        const userData = {
+          fullName: document.querySelector('#reg-fullname')?.value || '',
+          studentId: document.querySelector('#reg-student-id')?.value || '',
+          email: document.querySelector('#reg-email')?.value || '',
+          course: document.querySelector('#reg-course')?.value || '',
+          budgetGoal: document.querySelector('#reg-budget')?.value || 1500,
+          university: document.querySelector('#reg-university')?.value || '',
+          password: document.querySelector('#reg-password')?.value || '',
+        };
+        handlers.onRegister(userData);
+      }
+    });
+  }
+
+  showError(msg) {
+    const box = document.querySelector('#auth-error-box');
+    if (!box) return;
+    box.innerHTML = `
+      <div class="alert alert-error">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>${this.escapeHTML(msg)}</span>
+      </div>
+    `;
+    box.classList.remove('hidden');
+  }
+}
+
+const authView = new AuthView();
+
+  /**
+ * NavigationView.js
+ * Application Sidebar Menu & Top Bar Navigation View
+ * 
+ * Responsibilities:
+ * - Renders the interactive Sidebar Navigation Menu:
+ *   1. Dashboard Overview
+ *   2. Allowance Manager (+₱)
+ *   3. Expense Tracker (-₱)
+ *   4. Transaction History
+ *   5. Student Profile & Settings
+ * - Renders the Top Header Bar with active page title, quick balance pill, user avatar, and mobile menu toggle.
+ * - Handles route switching and Logout button.
+ */
+
+
+
+class NavigationView extends View {
+  _sidebarElement = document.querySelector('#app-sidebar');
+  _topbarElement = document.querySelector('#app-topbar');
+
+  render(stateData) {
+    this._data = stateData;
+    if (this._sidebarElement) {
+      this._sidebarElement.innerHTML = this._generateSidebarMarkup();
+    }
+    if (this._topbarElement) {
+      this._topbarElement.innerHTML = this._generateTopbarMarkup();
+    }
+  }
+
+  _generateSidebarMarkup() {
+    const { currentPage, currentUser, totals } = this._data;
+    const initials = this.getInitials(currentUser?.fullName);
+    const avatarBg = currentUser?.avatarColor || '#2563eb';
+
+    const navItems = [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        badge: '',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>`,
+      },
+      {
+        id: 'allowance',
+        label: 'Allowances',
+        badge: `+${totals.allowanceCount || 0}`,
+        badgeClass: 'nav-badge-green',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      },
+      {
+        id: 'expense',
+        label: 'Expenses',
+        badge: `-${totals.expenseCount || 0}`,
+        badgeClass: 'nav-badge-rose',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      },
+      {
+        id: 'transactions',
+        label: 'Transaction History',
+        badge: `${totals.transactionCount || 0}`,
+        badgeClass: 'nav-badge-neutral',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>`,
+      },
+      {
+        id: 'profile',
+        label: 'My Profile',
+        badge: '',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`,
+      },
+    ];
+
+    return `
+      <div class="sidebar-inner">
+        <!-- Brand Header -->
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="sidebar-brand-text">
+            <span class="sidebar-title">Penny<span>Wise</span></span>
+            <span class="sidebar-subtitle">Student Finance</span>
+          </div>
+          <button type="button" class="sidebar-close-btn" id="btn-close-sidebar" aria-label="Close menu">&times;</button>
+        </div>
+
+        <!-- Quick Wallet Balance Box in Sidebar -->
+        <div class="sidebar-wallet-card">
+          <span class="wallet-label">Available Balance</span>
+          <strong class="wallet-amount ${totals.balance < 0 ? 'text-danger' : ''}">${this.formatCurrency(totals.balance)}</strong>
+          <div class="wallet-cycle-tag">${this.escapeHTML(currentUser?.allowanceCycle || 'Weekly')} Cycle</div>
+        </div>
+
+        <!-- Navigation Menu Links -->
+        <div class="sidebar-menu-label">MAIN MENU</div>
+        <nav class="sidebar-nav" aria-label="Main Navigation">
+          ${navItems
+            .map(
+              (item) => `
+            <button 
+              type="button" 
+              class="nav-item ${currentPage === item.id ? 'active' : ''}" 
+              data-nav-page="${item.id}"
+            >
+              <span class="nav-item-icon">${item.icon}</span>
+              <span class="nav-item-label">${item.label}</span>
+              ${item.badge ? `<span class="nav-item-badge ${item.badgeClass || ''}">${item.badge}</span>` : ''}
+            </button>
+          `
+            )
+            .join('')}
+        </nav>
+
+        <!-- Bottom User Profile & Logout -->
+        <div class="sidebar-footer">
+          <div class="sidebar-user-card" data-nav-page="profile" title="Edit Profile">
+            <div class="user-avatar" style="background-color: ${avatarBg};">${initials}</div>
+            <div class="user-meta">
+              <div class="user-name">${this.escapeHTML(currentUser?.fullName || 'Student')}</div>
+              <div class="user-role">${this.escapeHTML(currentUser?.studentId || 'DOrSU Student')}</div>
+            </div>
+          </div>
+
+          <button type="button" class="btn-logout" id="btn-sidebar-logout" title="Sign Out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  _generateTopbarMarkup() {
+    const { currentPage, currentUser, totals } = this._data;
+    const initials = this.getInitials(currentUser?.fullName);
+    const avatarBg = currentUser?.avatarColor || '#2563eb';
+
+    const pageTitles = {
+      dashboard: {
+        title: 'Financial Dashboard',
+        subtitle: `Welcome back, ${currentUser?.fullName?.split(' ')[0] || 'Student'}! Here is your real-time financial summary.`,
+      },
+      allowance: {
+        title: 'Allowance Manager',
+        subtitle: 'Record your weekly or monthly allowances, scholarships, and extra income.',
+      },
+      expense: {
+        title: 'Expense Tracker',
+        subtitle: 'Log your daily spending on food, transportation, school supplies, and bills.',
+      },
+      transactions: {
+        title: 'Transaction History',
+        subtitle: 'Search, filter, edit, or export your complete ledger of allowances and expenses.',
+      },
+      profile: {
+        title: 'Student Profile & Settings',
+        subtitle: 'Manage your personal student credentials, budget goals, and account data.',
+      },
+    };
+
+    const info = pageTitles[currentPage] || pageTitles.dashboard;
+
+    return `
+      <div class="topbar-inner">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="btn-open-sidebar" aria-label="Open menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div>
+            <h1 class="topbar-title">${info.title}</h1>
+            <p class="topbar-subtitle">${this.escapeHTML(info.subtitle)}</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-quick-actions">
+            <button type="button" class="btn btn-sm btn-green-soft" data-nav-page="allowance">
+              + Add Allowance
+            </button>
+            <button type="button" class="btn btn-sm btn-rose-soft" data-nav-page="expense">
+              - Add Expense
+            </button>
+          </div>
+
+          <button type="button" class="topbar-profile-pill" data-nav-page="profile" title="Go to Profile">
+            <div class="user-avatar-sm" style="background-color: ${avatarBg};">${initials}</div>
+            <span class="topbar-username">${this.escapeHTML(currentUser?.fullName || 'Student')}</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  addHandlerNavigate(handler) {
+    const handleNavClick = (e) => {
+      const navTrigger = e.target.closest('[data-nav-page]');
+      if (navTrigger) {
+        const targetPage = navTrigger.dataset.navPage;
+        this._closeMobileDrawer();
+        handler(targetPage);
+      }
+    };
+
+    if (this._sidebarElement) {
+      this._sidebarElement.addEventListener('click', (e) => {
+        if (e.target.closest('#btn-close-sidebar')) {
+          this._closeMobileDrawer();
+          return;
+        }
+        handleNavClick(e);
+      });
+    }
+
+    if (this._topbarElement) {
+      this._topbarElement.addEventListener('click', (e) => {
+        if (e.target.closest('#btn-open-sidebar')) {
+          this._openMobileDrawer();
+          return;
+        }
+        handleNavClick(e);
+      });
+    }
+
+    const overlay = document.querySelector('#sidebar-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', () => this._closeMobileDrawer());
+    }
+  }
+
+  addHandlerLogout(handler) {
+    if (!this._sidebarElement) return;
+    this._sidebarElement.addEventListener('click', (e) => {
+      const logoutBtn = e.target.closest('#btn-sidebar-logout');
+      if (logoutBtn) {
+        this._closeMobileDrawer();
+        handler();
+      }
+    });
+  }
+
+  _openMobileDrawer() {
+    this._sidebarElement?.classList.add('sidebar-open');
+    document.querySelector('#sidebar-overlay')?.classList.remove('hidden');
+  }
+
+  _closeMobileDrawer() {
+    this._sidebarElement?.classList.remove('sidebar-open');
+    document.querySelector('#sidebar-overlay')?.classList.add('hidden');
+  }
+}
+
+const navigationView = new NavigationView();
+
+  /**
+ * DashboardView.js
+ * Assigned to: Member 1 (Dashboard Developer)
+ * 
+ * Responsibilities:
+ * - Renders the dedicated Financial Dashboard page.
+ * - Displays the 4 Core Financial Cards:
+ *   1. Remaining Balance (Derived Value: Income - Expenses)
+ *   2. Total Allowance Received
+ *   3. Total Expenses Spent
+ *   4. Spending Limit / Budget Goal Status
+ * - Renders Expense Breakdown by Category with visual progress bars.
+ * - Displays Recent Transactions preview with quick navigation to full history, Add Allowance, or Add Expense.
+ */
+
+
+
+class DashboardView extends View {
+  _parentElement = document.querySelector('#page-dashboard');
+
+  _generateMarkup() {
+    const { totals, categoryBreakdown, transactions, currentUser } = this._data;
+    const {
+      totalIncome,
+      totalExpenses,
+      balance,
+      transactionCount,
+      savingsRate,
+      budgetGoal,
+      budgetRemaining,
+      budgetUsedPercent,
+    } = totals;
+
+    let statusClass = 'status-positive';
+    let statusLabel = 'Healthy Balance';
+    let statusDesc = `You have saved ${savingsRate}% of your allowance.`;
+
+    if (balance < 0) {
+      statusClass = 'status-negative';
+      statusLabel = 'Over Budget';
+      statusDesc = 'Expenses exceed your received allowance!';
+    } else if (totalIncome > 0 && balance <= totalIncome * 0.2) {
+      statusClass = 'status-warning';
+      statusLabel = 'Low Balance';
+      statusDesc = 'Less than 20% of your allowance remains.';
+    }
+
+    const recentTransactions = (transactions || []).slice(0, 5);
+
+    return `
+      <!-- Top Summary Metric Cards -->
+      <div class="dashboard-grid">
+        <!-- Card 1: Remaining Balance -->
+        <div class="metric-card card-balance ${statusClass}">
+          <div class="card-header-flex">
+            <span class="card-label">Remaining Balance</span>
+            <span class="status-badge ${statusClass}">${statusLabel}</span>
+          </div>
+          <div class="card-value balance-value" id="display-balance">${this.formatCurrency(balance)}</div>
+          <div class="card-subtext">
+            <span>Formula: </span>
+            <code class="formula-code">${this.formatCurrency(totalIncome)} - ${this.formatCurrency(totalExpenses)}</code>
+          </div>
+          <p class="status-explanation">${statusDesc}</p>
+        </div>
+
+        <!-- Card 2: Total Allowance -->
+        <div class="metric-card card-income">
+          <div class="card-header-flex">
+            <span class="card-label">Total Allowance</span>
+            <div class="card-icon-wrap icon-income">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0-16l-4 4m4-4l4 4" />
+              </svg>
+            </div>
+          </div>
+          <div class="card-value income-value" id="display-income">+${this.formatCurrency(totalIncome)}</div>
+          <div class="card-subtext">${totals.allowanceCount} allowance record(s)</div>
+        </div>
+
+        <!-- Card 3: Total Expenses -->
+        <div class="metric-card card-expense">
+          <div class="card-header-flex">
+            <span class="card-label">Total Expenses</span>
+            <div class="card-icon-wrap icon-expense">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20V4m0 20l4-4m-4 4l-4-4" />
+              </svg>
+            </div>
+          </div>
+          <div class="card-value expense-value" id="display-expenses">-${this.formatCurrency(totalExpenses)}</div>
+          <div class="card-subtext">${totals.expenseCount} expense record(s)</div>
+        </div>
+
+        <!-- Card 4: Spending Budget Goal -->
+        <div class="metric-card card-summary">
+          <div class="card-header-flex">
+            <span class="card-label">${this.escapeHTML(currentUser?.allowanceCycle || 'Weekly')} Budget Goal</span>
+            <div class="card-icon-wrap icon-summary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+          </div>
+          <div class="card-value summary-value" id="display-budget-goal">${this.formatCurrency(budgetGoal)}</div>
+          <div class="budget-progress-mini">
+            <div class="budget-progress-bar ${budgetUsedPercent >= 90 ? 'bar-danger' : ''}" style="width: ${budgetUsedPercent}%;"></div>
+          </div>
+          <div class="card-subtext">
+            ${
+              budgetRemaining >= 0
+                ? `${this.formatCurrency(budgetRemaining)} left before limit (${budgetUsedPercent}% used)`
+                : `Exceeded limit by ${this.formatCurrency(Math.abs(budgetRemaining))}!`
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-Column Dashboard Content: Category Breakdown & Recent Transactions -->
+      <div class="dashboard-split-grid">
+        <!-- Left Column: Spending Breakdown by Category -->
+        <div class="card panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="section-title-icon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+              </svg>
+              Spending Breakdown by Category
+            </h3>
+            <button type="button" class="btn-link" data-dash-nav="expense">+ Log Expense</button>
+          </div>
+          <div class="panel-body">
+            ${this._generateCategoryMarkup(categoryBreakdown, totalExpenses)}
+          </div>
+        </div>
+
+        <!-- Right Column: Recent Activity -->
+        <div class="card panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="section-title-icon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Recent Transactions (<span id="display-count">${transactionCount}</span> total)
+            </h3>
+            <button type="button" class="btn-link" data-dash-nav="transactions">View All &rarr;</button>
+          </div>
+          <div class="panel-body">
+            ${this._generateRecentMarkup(recentTransactions)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _generateCategoryMarkup(breakdown, totalExpenses) {
+    if (!breakdown || breakdown.length === 0 || totalExpenses === 0) {
+      return `
+        <div class="empty-panel-state">
+          <p>No expenses recorded yet. Click <strong>+ Log Expense</strong> to track where your allowance goes.</p>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="breakdown-list">
+        ${breakdown
+          .map(
+            (item) => `
+          <div class="breakdown-item">
+            <div class="breakdown-item-labels">
+              <span class="breakdown-item-name">${this.escapeHTML(item.category)}</span>
+              <span class="breakdown-item-figures">
+                <strong>${this.formatCurrency(item.total)}</strong>
+                <span class="percentage-pill">(${item.percentage}%)</span>
+              </span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: ${item.percentage}%;"></div>
+            </div>
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+  }
+
+  _generateRecentMarkup(recentList) {
+    if (!recentList || recentList.length === 0) {
+      return `
+        <div class="empty-panel-state">
+          <p>No transactions recorded yet.</p>
+          <div class="empty-panel-actions">
+            <button type="button" class="btn btn-sm btn-green" data-dash-nav="allowance">+ Add Allowance</button>
+            <button type="button" class="btn btn-sm btn-rose" data-dash-nav="expense">- Add Expense</button>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="recent-list">
+        ${recentList
+          .map((tx) => {
+            const isIncome = tx.type === 'income';
+            const sign = isIncome ? '+' : '-';
+            const amtClass = isIncome ? 'tx-amount-income' : 'tx-amount-expense';
+            return `
+              <div class="recent-item">
+                <div class="recent-item-left">
+                  <div class="recent-dot ${isIncome ? 'dot-green' : 'dot-rose'}"></div>
+                  <div>
+                    <div class="recent-desc">${this.escapeHTML(tx.description)}</div>
+                    <div class="recent-meta">${this.escapeHTML(tx.category)} • ${this.formatDate(tx.date)}</div>
+                  </div>
+                </div>
+                <div class="recent-amount ${amtClass}">
+                  ${sign}${this.formatCurrency(tx.amount)}
+                </div>
+              </div>
+            `;
+          })
+          .join('')}
+      </div>
+    `;
+  }
+
+  addHandlerQuickNav(handler) {
+    if (!this._parentElement) return;
+    this._parentElement.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-dash-nav]');
+      if (btn) {
+        handler(btn.dataset.dashNav);
+      }
+    });
+  }
+}
+
+const dashboardView = new DashboardView();
+
+  /**
+ * AllowanceView.js
+ * Assigned to: Member 2 (Allowance Developer)
+ * 
+ * Responsibilities:
+ * - Renders the dedicated Allowance Management page (#page-allowance).
+ * - Provides the Add Allowance form with validation (rejects empty description & negative/zero amounts).
+ * - Displays Allowance summary metrics (Total Allowance Received, Number of Allowance Records, Sources Breakdown).
+ * - Displays a dedicated Allowance Records table with direct Edit and Delete buttons.
+ */
+
+
+
+class AllowanceView extends View {
+  _parentElement = document.querySelector('#page-allowance');
+
+  _generateMarkup() {
+    const today = new Date().toISOString().split('T')[0];
+    const { totals, allowances, allowanceBreakdown } = this._data || {
+      totals: { totalIncome: 0, allowanceCount: 0 },
+      allowances: [],
+      allowanceBreakdown: [],
+    };
+
+    return `
+      <!-- Allowance Summary Header Banner -->
+      <div class="page-summary-banner banner-green">
+        <div class="banner-stat">
+          <span class="banner-stat-label">Total Allowance Received</span>
+          <strong class="banner-stat-value">+${this.formatCurrency(totals.totalIncome)}</strong>
+        </div>
+        <div class="banner-stat">
+          <span class="banner-stat-label">Allowance Records</span>
+          <strong class="banner-stat-value">${totals.allowanceCount} entries</strong>
+        </div>
+        <div class="banner-stat">
+          <span class="banner-stat-label">Current Available Balance</span>
+          <strong class="banner-stat-value">${this.formatCurrency(totals.balance)}</strong>
+        </div>
+      </div>
+
+      <!-- Main 2-Column Layout: Form on Left, Allowance Records & Source Breakdown on Right -->
+      <div class="page-split-layout">
+        <!-- Left Column: Add Allowance Form -->
+        <div class="card form-card card-accent-green">
+          <div class="form-card-header">
+            <div class="form-title-wrap">
+              <span class="form-badge badge-green">Income (+₱)</span>
+              <h3 class="form-heading">Add New Allowance</h3>
+            </div>
+            <p class="form-subheading">Record money received from parents, scholarships, or part-time work.</p>
+          </div>
+
+          <form id="form-add-allowance" class="entry-form" novalidate>
+            <div id="allowance-error-box" class="form-alert-box hidden"></div>
+
+            <div class="form-group">
+              <label for="allowance-amount" class="form-label">Amount Received (₱) <span class="required">*</span></label>
+              <div class="input-with-prefix">
+                <span class="currency-prefix">₱</span>
+                <input 
+                  type="number" 
+                  id="allowance-amount" 
+                  class="form-control" 
+                  placeholder="e.g. 1500.00" 
+                  step="0.01" 
+                  min="0.01" 
+                  required 
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="allowance-desc" class="form-label">Description / Note <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="allowance-desc" 
+                class="form-control" 
+                placeholder="e.g. Weekly allowance from parents" 
+                maxlength="80" 
+                required 
+              />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="allowance-category" class="form-label">Allowance Source</label>
+                <select id="allowance-category" class="form-control">
+                  <option value="Weekly Allowance">Weekly Allowance</option>
+                  <option value="Monthly Allowance">Monthly Allowance</option>
+                  <option value="Parents / Family">Parents / Family Support</option>
+                  <option value="Scholarship / Stipend">Scholarship / Stipend</option>
+                  <option value="Part-time Job">Part-time Job Earnings</option>
+                  <option value="Other Allowance">Other Income</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="allowance-method" class="form-label">Received Via</label>
+                <select id="allowance-method" class="form-control">
+                  <option value="Cash">Cash</option>
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya</option>
+                  <option value="Bank Transfer">Bank Transfer / ATM</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="allowance-date" class="form-label">Date Received</label>
+              <input type="date" id="allowance-date" class="form-control" value="${today}" />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-green" id="btn-submit-allowance">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                  <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Save Allowance
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-reset-allowance">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right Column: Allowance History & Source Breakdown -->
+        <div class="page-right-stack">
+          <!-- Allowance Source Breakdown -->
+          <div class="card panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Allowance by Source</h3>
+            </div>
+            <div class="panel-body">
+              ${
+                allowanceBreakdown.length === 0
+                  ? `<p class="text-muted">No allowances recorded yet.</p>`
+                  : `<div class="breakdown-list">
+                      ${allowanceBreakdown
+                        .map(
+                          (item) => `
+                        <div class="breakdown-item">
+                          <div class="breakdown-item-labels">
+                            <span class="breakdown-item-name">${this.escapeHTML(item.category)}</span>
+                            <span class="breakdown-item-figures">
+                              <strong>${this.formatCurrency(item.total)}</strong>
+                              <span class="percentage-pill">(${item.percentage}%)</span>
+                            </span>
+                          </div>
+                          <div class="progress-track">
+                            <div class="progress-fill fill-green" style="width: ${item.percentage}%;"></div>
+                          </div>
+                        </div>
+                      `
+                        )
+                        .join('')}
+                    </div>`
+              }
+            </div>
+          </div>
+
+          <!-- Recorded Allowances Table -->
+          <div class="card panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Recorded Allowances (${allowances.length})</h3>
+            </div>
+            <div class="panel-body no-padding">
+              ${
+                allowances.length === 0
+                  ? `<div class="empty-panel-state"><p>You haven't logged any allowances yet. Use the form on the left to add your first allowance.</p></div>`
+                  : `<div class="table-responsive">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Source</th>
+                            <th class="text-right">Amount</th>
+                            <th class="text-center">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${allowances
+                            .map(
+                              (tx) => `
+                            <tr class="tx-row">
+                              <td class="tx-cell-date">${this.formatDate(tx.date)}</td>
+                              <td class="tx-cell-desc">
+                                <div>${this.escapeHTML(tx.description)}</div>
+                                <small class="text-muted">${this.escapeHTML(tx.paymentMethod || 'Cash')}</small>
+                              </td>
+                              <td><span class="category-tag">${this.escapeHTML(tx.category)}</span></td>
+                              <td class="text-right tx-amount-income"><strong>+${this.formatCurrency(tx.amount)}</strong></td>
+                              <td class="text-center">
+                                <div class="action-buttons-group">
+                                  <button type="button" class="btn-icon btn-edit" data-id="${tx.id}" title="Edit Allowance">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+                                  </button>
+                                  <button type="button" class="btn-icon btn-delete" data-id="${tx.id}" title="Delete Allowance">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          `
+                            )
+                            .join('')}
+                        </tbody>
+                      </table>
+                    </div>`
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  addHandlerActions(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      const resetBtn = e.target.closest('#btn-reset-allowance');
+      if (resetBtn) {
+        const form = this._parentElement.querySelector('#form-add-allowance');
+        if (form) {
+          form.reset();
+          this.hideError();
+          const dateInput = form.querySelector('#allowance-date');
+          if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        return;
+      }
+
+      const editBtn = e.target.closest('.btn-edit');
+      if (editBtn && handlers.onEdit) {
+        handlers.onEdit(editBtn.dataset.id);
+        return;
+      }
+
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (deleteBtn && handlers.onDelete) {
+        handlers.onDelete(deleteBtn.dataset.id);
+      }
+    });
+
+    this._parentElement.addEventListener('submit', (e) => {
+      if (e.target.id !== 'form-add-allowance') return;
+      e.preventDefault();
+
+      const form = e.target;
+      const amountInput = form.querySelector('#allowance-amount');
+      const descInput = form.querySelector('#allowance-desc');
+      const categorySelect = form.querySelector('#allowance-category');
+      const methodSelect = form.querySelector('#allowance-method');
+      const dateInput = form.querySelector('#allowance-date');
+
+      const rawAmount = amountInput.value.trim();
+      const rawDesc = descInput.value.trim();
+      const amount = parseFloat(rawAmount);
+
+      if (!rawDesc) {
+        this.showError('Description is required. Please specify where this allowance came from.');
+        descInput.focus();
+        return;
+      }
+
+      if (rawAmount === '' || isNaN(amount) || amount <= 0) {
+        this.showError('Please enter a valid allowance amount greater than ₱0.00.');
+        amountInput.focus();
+        return;
+      }
+
+      this.hideError();
+
+      handlers.onAdd({
+        type: 'income',
+        amount: Number(amount.toFixed(2)),
+        description: rawDesc,
+        category: categorySelect.value || 'Weekly Allowance',
+        paymentMethod: methodSelect?.value || 'Cash',
+        date: dateInput.value || new Date().toISOString().split('T')[0],
+      });
+    });
+  }
+
+  showError(msg) {
+    const errorBox = document.querySelector('#allowance-error-box');
+    if (!errorBox) return;
+    errorBox.innerHTML = `
+      <div class="alert alert-error">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>${this.escapeHTML(msg)}</span>
+      </div>
+    `;
+    errorBox.classList.remove('hidden');
+  }
+
+  hideError() {
+    const errorBox = document.querySelector('#allowance-error-box');
+    if (errorBox) {
+      errorBox.innerHTML = '';
+      errorBox.classList.add('hidden');
+    }
+  }
+}
+
+const allowanceView = new AllowanceView();
+
+  /**
+ * ExpenseView.js
+ * Assigned to: Member 3 (Expense Developer)
+ * 
+ * Responsibilities:
+ * - Renders the dedicated Expense Tracker page (#page-expense).
+ * - Provides the Record Expense form with validation (rejects empty description & negative/zero amounts).
+ * - Displays Expense summary metrics (Total Spent, Remaining Budget Limit, Number of Expense Records).
+ * - Displays a dedicated Expenses table & Category Breakdown with direct Edit and Delete buttons.
+ */
+
+
+
+class ExpenseView extends View {
+  _parentElement = document.querySelector('#page-expense');
+
+  _generateMarkup() {
+    const today = new Date().toISOString().split('T')[0];
+    const { totals, expenses, categoryBreakdown } = this._data || {
+      totals: { totalExpenses: 0, expenseCount: 0, balance: 0, budgetRemaining: 0 },
+      expenses: [],
+      categoryBreakdown: [],
+    };
+
+    return `
+      <!-- Expense Summary Header Banner -->
+      <div class="page-summary-banner banner-rose">
+        <div class="banner-stat">
+          <span class="banner-stat-label">Total Expenses Spent</span>
+          <strong class="banner-stat-value">-${this.formatCurrency(totals.totalExpenses)}</strong>
+        </div>
+        <div class="banner-stat">
+          <span class="banner-stat-label">Expense Entries</span>
+          <strong class="banner-stat-value">${totals.expenseCount} records</strong>
+        </div>
+        <div class="banner-stat">
+          <span class="banner-stat-label">Remaining Allowance Balance</span>
+          <strong class="banner-stat-value">${this.formatCurrency(totals.balance)}</strong>
+        </div>
+      </div>
+
+      <!-- Main 2-Column Layout: Expense Form on Left, Breakdown & Expense Records on Right -->
+      <div class="page-split-layout">
+        <!-- Left Column: Record Expense Form -->
+        <div class="card form-card card-accent-rose">
+          <div class="form-card-header">
+            <div class="form-title-wrap">
+              <span class="form-badge badge-rose">Expense (-₱)</span>
+              <h3 class="form-heading">Record New Expense</h3>
+            </div>
+            <p class="form-subheading">Log your daily spending on meals, fare, school supplies, and bills.</p>
+          </div>
+
+          <form id="form-add-expense" class="entry-form" novalidate>
+            <div id="expense-error-box" class="form-alert-box hidden"></div>
+
+            <div class="form-group">
+              <label for="expense-amount" class="form-label">Amount Spent (₱) <span class="required">*</span></label>
+              <div class="input-with-prefix">
+                <span class="currency-prefix">₱</span>
+                <input 
+                  type="number" 
+                  id="expense-amount" 
+                  class="form-control" 
+                  placeholder="e.g. 85.00" 
+                  step="0.01" 
+                  min="0.01" 
+                  required 
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="expense-desc" class="form-label">What did you spend on? <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="expense-desc" 
+                class="form-control" 
+                placeholder="e.g. Campus lunch at canteen, tricycle fare" 
+                maxlength="80" 
+                required 
+              />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="expense-category" class="form-label">Expense Category <span class="required">*</span></label>
+                <select id="expense-category" class="form-control" required>
+                  <option value="Food & Drinks">Food & Drinks</option>
+                  <option value="Transportation">Transportation / Commute</option>
+                  <option value="School Supplies">School Supplies & Printing</option>
+                  <option value="Boarding House / Rent">Boarding House / Dorm Rent</option>
+                  <option value="Utilities & Load">Mobile Load & Internet</option>
+                  <option value="Personal Care">Personal Care & Hygiene</option>
+                  <option value="Leisure & Entertainment">Leisure & Socials</option>
+                  <option value="Other Expenses">Other Necessities</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="expense-method" class="form-label">Payment Method</label>
+                <select id="expense-method" class="form-control">
+                  <option value="Cash">Cash</option>
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya</option>
+                  <option value="Bank / Card">Debit Card / Bank</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="expense-date" class="form-label">Date Spent</label>
+              <input type="date" id="expense-date" class="form-control" value="${today}" />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-rose" id="btn-submit-expense">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                  <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                </svg>
+                Save Expense
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-reset-expense">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right Column: Category Breakdown & Recorded Expenses Table -->
+        <div class="page-right-stack">
+          <!-- Category Breakdown -->
+          <div class="card panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Expenses by Category</h3>
+            </div>
+            <div class="panel-body">
+              ${
+                categoryBreakdown.length === 0
+                  ? `<p class="text-muted">No expenses recorded yet.</p>`
+                  : `<div class="breakdown-list">
+                      ${categoryBreakdown
+                        .map(
+                          (item) => `
+                        <div class="breakdown-item">
+                          <div class="breakdown-item-labels">
+                            <span class="breakdown-item-name">${this.escapeHTML(item.category)}</span>
+                            <span class="breakdown-item-figures">
+                              <strong>${this.formatCurrency(item.total)}</strong>
+                              <span class="percentage-pill">(${item.percentage}%)</span>
+                            </span>
+                          </div>
+                          <div class="progress-track">
+                            <div class="progress-fill fill-rose" style="width: ${item.percentage}%;"></div>
+                          </div>
+                        </div>
+                      `
+                        )
+                        .join('')}
+                    </div>`
+              }
+            </div>
+          </div>
+
+          <!-- Recorded Expenses Table -->
+          <div class="card panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Recorded Expenses (${expenses.length})</h3>
+            </div>
+            <div class="panel-body no-padding">
+              ${
+                expenses.length === 0
+                  ? `<div class="empty-panel-state"><p>You haven't logged any expenses yet. Use the form on the left to record your spending.</p></div>`
+                  : `<div class="table-responsive">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th class="text-right">Amount</th>
+                            <th class="text-center">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${expenses
+                            .map(
+                              (tx) => `
+                            <tr class="tx-row">
+                              <td class="tx-cell-date">${this.formatDate(tx.date)}</td>
+                              <td class="tx-cell-desc">
+                                <div>${this.escapeHTML(tx.description)}</div>
+                                <small class="text-muted">${this.escapeHTML(tx.paymentMethod || 'Cash')}</small>
+                              </td>
+                              <td><span class="category-tag">${this.escapeHTML(tx.category)}</span></td>
+                              <td class="text-right tx-amount-expense"><strong>-${this.formatCurrency(tx.amount)}</strong></td>
+                              <td class="text-center">
+                                <div class="action-buttons-group">
+                                  <button type="button" class="btn-icon btn-edit" data-id="${tx.id}" title="Edit Expense">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+                                  </button>
+                                  <button type="button" class="btn-icon btn-delete" data-id="${tx.id}" title="Delete Expense">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          `
+                            )
+                            .join('')}
+                        </tbody>
+                      </table>
+                    </div>`
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  addHandlerActions(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      const resetBtn = e.target.closest('#btn-reset-expense');
+      if (resetBtn) {
+        const form = this._parentElement.querySelector('#form-add-expense');
+        if (form) {
+          form.reset();
+          this.hideError();
+          const dateInput = form.querySelector('#expense-date');
+          if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        return;
+      }
+
+      const editBtn = e.target.closest('.btn-edit');
+      if (editBtn && handlers.onEdit) {
+        handlers.onEdit(editBtn.dataset.id);
+        return;
+      }
+
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (deleteBtn && handlers.onDelete) {
+        handlers.onDelete(deleteBtn.dataset.id);
+      }
+    });
+
+    this._parentElement.addEventListener('submit', (e) => {
+      if (e.target.id !== 'form-add-expense') return;
+      e.preventDefault();
+
+      const form = e.target;
+      const amountInput = form.querySelector('#expense-amount');
+      const descInput = form.querySelector('#expense-desc');
+      const categorySelect = form.querySelector('#expense-category');
+      const methodSelect = form.querySelector('#expense-method');
+      const dateInput = form.querySelector('#expense-date');
+
+      const rawAmount = amountInput.value.trim();
+      const rawDesc = descInput.value.trim();
+      const amount = parseFloat(rawAmount);
+
+      if (!rawDesc) {
+        this.showError('Description is required. Please specify what you spent on.');
+        descInput.focus();
+        return;
+      }
+
+      if (rawAmount === '' || isNaN(amount) || amount <= 0) {
+        this.showError('Please enter a valid expense amount greater than ₱0.00.');
+        amountInput.focus();
+        return;
+      }
+
+      this.hideError();
+
+      handlers.onAdd({
+        type: 'expense',
+        amount: Number(amount.toFixed(2)),
+        description: rawDesc,
+        category: categorySelect.value || 'Food & Drinks',
+        paymentMethod: methodSelect?.value || 'Cash',
+        date: dateInput.value || new Date().toISOString().split('T')[0],
+      });
+    });
+  }
+
+  showError(msg) {
+    const errorBox = document.querySelector('#expense-error-box');
+    if (!errorBox) return;
+    errorBox.innerHTML = `
+      <div class="alert alert-error">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>${this.escapeHTML(msg)}</span>
+      </div>
+    `;
+    errorBox.classList.remove('hidden');
+  }
+
+  hideError() {
+    const errorBox = document.querySelector('#expense-error-box');
+    if (errorBox) {
+      errorBox.innerHTML = '';
+      errorBox.classList.add('hidden');
+    }
+  }
+}
+
+const expenseView = new ExpenseView();
+
+  /**
+ * TransactionView.js
+ * Assigned to: Member 4 (Transaction History Developer)
+ * 
+ * Responsibilities:
+ * - Renders the dedicated Transaction History page (#page-transactions).
+ * - Displays filter controls (Type, Category, Sort Order, Live Search).
+ * - Computes filtered subtotal metrics (Filtered Income, Filtered Expenses, Net Filtered Balance).
+ * - Supports CSV Export so students can download their ledger for Excel/Google Sheets.
+ * - Handles Edit and Delete transaction actions.
+ */
+
+
+
+class TransactionView extends View {
+  _parentElement = document.querySelector('#page-transactions');
+
+  _generateMarkup() {
+    const { transactions, filter, categories } = this._data || {
+      transactions: [],
+      filter: { type: 'all', category: 'all', searchQuery: '', sortBy: 'newest' },
+      categories: [],
+    };
+
+    // Calculate subtotals for currently filtered view
+    let filteredIncome = 0;
+    let filteredExpense = 0;
+    transactions.forEach((tx) => {
+      if (tx.type === 'income') filteredIncome += Number(tx.amount) || 0;
+      else filteredExpense += Number(tx.amount) || 0;
+    });
+    const filteredNet = filteredIncome - filteredExpense;
+
+    return `
+      <!-- Filtered Summary Bar -->
+      <div class="history-summary-bar">
+        <div class="history-stat-item">
+          <span>Showing Records</span>
+          <strong id="tx-filter-count">${transactions.length} entries</strong>
+        </div>
+        <div class="history-stat-item">
+          <span>Filtered Allowances</span>
+          <strong class="tx-amount-income">+${this.formatCurrency(filteredIncome)}</strong>
+        </div>
+        <div class="history-stat-item">
+          <span>Filtered Expenses</span>
+          <strong class="tx-amount-expense">-${this.formatCurrency(filteredExpense)}</strong>
+        </div>
+        <div class="history-stat-item">
+          <span>Net Total</span>
+          <strong>${this.formatCurrency(filteredNet)}</strong>
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <!-- Filter & Search Toolbar -->
+        <div class="transaction-toolbar">
+          <div class="toolbar-controls-full">
+            <!-- Search Input -->
+            <div class="search-input-wrap">
+              <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+              <input 
+                type="text" 
+                id="tx-search-input" 
+                class="form-control search-field" 
+                placeholder="Search description, category, or method..." 
+                value="${this.escapeHTML(filter.searchQuery || '')}"
+              />
+            </div>
+
+            <!-- Type Filter -->
+            <select id="tx-filter-type" class="form-control filter-select">
+              <option value="all" ${filter.type === 'all' ? 'selected' : ''}>All Types</option>
+              <option value="income" ${filter.type === 'income' ? 'selected' : ''}>Allowances Only (+)</option>
+              <option value="expense" ${filter.type === 'expense' ? 'selected' : ''}>Expenses Only (-)</option>
+            </select>
+
+            <!-- Category Filter -->
+            <select id="tx-filter-category" class="form-control filter-select">
+              <option value="all" ${filter.category === 'all' ? 'selected' : ''}>All Categories</option>
+              ${categories
+                .map(
+                  (cat) => `
+                <option value="${this.escapeHTML(cat)}" ${filter.category === cat ? 'selected' : ''}>
+                  ${this.escapeHTML(cat)}
+                </option>
+              `
+                )
+                .join('')}
+            </select>
+
+            <!-- Sort Order -->
+            <select id="tx-sort-by" class="form-control filter-select">
+              <option value="newest" ${filter.sortBy === 'newest' ? 'selected' : ''}>Newest First</option>
+              <option value="oldest" ${filter.sortBy === 'oldest' ? 'selected' : ''}>Oldest First</option>
+              <option value="highest" ${filter.sortBy === 'highest' ? 'selected' : ''}>Highest Amount</option>
+              <option value="lowest" ${filter.sortBy === 'lowest' ? 'selected' : ''}>Lowest Amount</option>
+            </select>
+
+            <!-- Export CSV Button -->
+            <button type="button" class="btn btn-secondary" id="btn-export-csv" title="Download CSV for Excel">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+              Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="transactions-container">
+          ${
+            transactions.length === 0
+              ? this._generateEmptyStateMarkup()
+              : this._generateTableMarkup(transactions)
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  _generateTableMarkup(transactions) {
+    return `
+      <div class="table-responsive">
+        <table class="data-table" id="transactions-table">
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Description</th>
+              <th scope="col">Category</th>
+              <th scope="col">Method</th>
+              <th scope="col">Type</th>
+              <th scope="col" class="text-right">Amount</th>
+              <th scope="col" class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${transactions.map((tx) => this._generateRowMarkup(tx)).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  _generateRowMarkup(tx) {
+    const isIncome = tx.type === 'income';
+    const amountSign = isIncome ? '+' : '-';
+    const amountClass = isIncome ? 'tx-amount-income' : 'tx-amount-expense';
+    const badgeClass = isIncome ? 'badge-green' : 'badge-rose';
+    const typeLabel = isIncome ? 'Allowance' : 'Expense';
+
+    return `
+      <tr class="tx-row" data-id="${tx.id}">
+        <td class="tx-cell-date">${this.formatDate(tx.date)}</td>
+        <td class="tx-cell-desc">
+          <span class="tx-description-text">${this.escapeHTML(tx.description)}</span>
+        </td>
+        <td class="tx-cell-category">
+          <span class="category-tag">${this.escapeHTML(tx.category)}</span>
+        </td>
+        <td class="tx-cell-method">
+          <span class="method-label">${this.escapeHTML(tx.paymentMethod || 'Cash')}</span>
+        </td>
+        <td class="tx-cell-type">
+          <span class="type-pill ${badgeClass}">${typeLabel}</span>
+        </td>
+        <td class="tx-cell-amount text-right ${amountClass}">
+          <strong>${amountSign}${this.formatCurrency(tx.amount)}</strong>
+        </td>
+        <td class="tx-cell-actions text-center">
+          <div class="action-buttons-group">
+            <button 
+              type="button" 
+              class="btn-icon btn-edit" 
+              data-id="${tx.id}" 
+              title="Edit Transaction"
+              aria-label="Edit transaction"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+            </button>
+            <button 
+              type="button" 
+              class="btn-icon btn-delete" 
+              data-id="${tx.id}" 
+              title="Delete Transaction"
+              aria-label="Delete transaction"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  _generateEmptyStateMarkup() {
+    return `
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+        </div>
+        <h4 class="empty-state-title">No transactions found</h4>
+        <p class="empty-state-text">No records match your current search or filter settings.</p>
+      </div>
+    `;
+  }
+
+  addHandlerActions(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.btn-edit');
+      if (editBtn && handlers.onEdit) {
+        handlers.onEdit(editBtn.dataset.id);
+        return;
+      }
+
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (deleteBtn && handlers.onDelete) {
+        handlers.onDelete(deleteBtn.dataset.id);
+        return;
+      }
+
+      const exportBtn = e.target.closest('#btn-export-csv');
+      if (exportBtn && handlers.onExportCSV) {
+        handlers.onExportCSV();
+      }
+    });
+
+    this._parentElement.addEventListener('change', (e) => {
+      if (e.target.id === 'tx-filter-type') {
+        handlers.onFilter({ type: e.target.value });
+      } else if (e.target.id === 'tx-filter-category') {
+        handlers.onFilter({ category: e.target.value });
+      } else if (e.target.id === 'tx-sort-by') {
+        handlers.onFilter({ sortBy: e.target.value });
+      }
+    });
+
+    this._parentElement.addEventListener('input', (e) => {
+      if (e.target.id === 'tx-search-input') {
+        const val = e.target.value;
+        handlers.onSearch(val);
+        // Preserve cursor focus after re-render
+        const input = this._parentElement.querySelector('#tx-search-input');
+        if (input) {
+          input.focus();
+          input.setSelectionRange(val.length, val.length);
+        }
+      }
+    });
+  }
+}
+
+const transactionView = new TransactionView();
+
+  /**
+ * ProfileView.js
+ * Student Profile & Account Settings View Layer
+ * 
+ * Responsibilities:
+ * - Renders the Student Profile card (Avatar, Full Name, Student ID, Course, University, Allowance Cycle).
+ * - Provides an interactive Edit Profile form to update personal info, avatar theme color, spending budget goal, and password.
+ * - Provides Data Management actions (Export CSV, Clear All Records, Log Out).
+ */
+
+
+
+class ProfileView extends View {
+  _parentElement = document.querySelector('#page-profile');
+
+  _generateMarkup() {
+    const { currentUser, totals } = this._data || {};
+    if (!currentUser) return '';
+
+    const initials = this.getInitials(currentUser.fullName);
+    const avatarBg = currentUser.avatarColor || '#2563eb';
+    const colors = [
+      { hex: '#2563eb', name: 'Royal Blue' },
+      { hex: '#059669', name: 'Emerald' },
+      { hex: '#7c3aed', name: 'Violet' },
+      { hex: '#db2777', name: 'Rose' },
+      { hex: '#d97706', name: 'Amber' },
+      { hex: '#0f172a', name: 'Slate Navy' },
+    ];
+
+    return `
+      <div class="profile-grid">
+        <!-- Left Column: Student ID Card & Account Summary -->
+        <div class="profile-left-col">
+          <div class="card student-id-card">
+            <div class="student-card-banner" style="background: linear-gradient(135deg, ${avatarBg}, #0f172a);"></div>
+            <div class="student-card-body">
+              <div class="student-avatar-xl" style="background-color: ${avatarBg};">
+                ${initials}
+              </div>
+              <h3 class="student-card-name">${this.escapeHTML(currentUser.fullName)}</h3>
+              <p class="student-card-course">${this.escapeHTML(currentUser.course || 'College Student')}</p>
+              <span class="student-id-pill">ID: ${this.escapeHTML(currentUser.studentId || 'N/A')}</span>
+
+              <div class="student-info-list">
+                <div class="student-info-row">
+                  <span class="info-label">University</span>
+                  <span class="info-val">${this.escapeHTML(currentUser.university || 'DOrSU')}</span>
+                </div>
+                <div class="student-info-row">
+                  <span class="info-label">Email</span>
+                  <span class="info-val">${this.escapeHTML(currentUser.email)}</span>
+                </div>
+                <div class="student-info-row">
+                  <span class="info-label">Allowance Cycle</span>
+                  <span class="info-val">${this.escapeHTML(currentUser.allowanceCycle || 'Weekly')}</span>
+                </div>
+                <div class="student-info-row">
+                  <span class="info-label">Spending Goal</span>
+                  <span class="info-val">${this.formatCurrency(currentUser.budgetGoal)}</span>
+                </div>
+                <div class="student-info-row">
+                  <span class="info-label">Total Records</span>
+                  <span class="info-val">${totals?.transactionCount || 0} transactions</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Data Management Card -->
+          <div class="card panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Data & Account Actions</h3>
+            </div>
+            <div class="panel-body account-actions-stack">
+              <button type="button" class="btn btn-secondary btn-block" id="btn-profile-export">
+                Download Transactions (CSV)
+              </button>
+              <button type="button" class="btn btn-rose-outline btn-block" id="btn-profile-clear">
+                Clear All Transaction History
+              </button>
+              <button type="button" class="btn btn-rose btn-block" id="btn-profile-logout">
+                Sign Out of Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Edit Profile & Preferences Form -->
+        <div class="card form-card">
+          <div class="form-card-header">
+            <h3 class="form-heading">Edit Profile & Budget Preferences</h3>
+            <p class="form-subheading">Update your student information, allowance cycle, spending limit, or password.</p>
+          </div>
+
+          <form id="form-edit-profile" class="entry-form" novalidate>
+            <div id="profile-alert-box" class="form-alert-box hidden"></div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="prof-fullname" class="form-label">Full Name <span class="required">*</span></label>
+                <input 
+                  type="text" 
+                  id="prof-fullname" 
+                  class="form-control" 
+                  value="${this.escapeHTML(currentUser.fullName)}" 
+                  required 
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="prof-student-id" class="form-label">Student ID Number</label>
+                <input 
+                  type="text" 
+                  id="prof-student-id" 
+                  class="form-control" 
+                  value="${this.escapeHTML(currentUser.studentId || '')}" 
+                  placeholder="e.g. 2024-01482"
+                />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="prof-email" class="form-label">Email Address <span class="required">*</span></label>
+                <input 
+                  type="email" 
+                  id="prof-email" 
+                  class="form-control" 
+                  value="${this.escapeHTML(currentUser.email)}" 
+                  required 
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="prof-course" class="form-label">Course & Year Level</label>
+                <input 
+                  type="text" 
+                  id="prof-course" 
+                  class="form-control" 
+                  value="${this.escapeHTML(currentUser.course || '')}" 
+                  placeholder="e.g. BSIT - 2nd Year"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="prof-university" class="form-label">School / University</label>
+              <input 
+                type="text" 
+                id="prof-university" 
+                class="form-control" 
+                value="${this.escapeHTML(currentUser.university || '')}" 
+              />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="prof-cycle" class="form-label">Allowance Frequency</label>
+                <select id="prof-cycle" class="form-control">
+                  <option value="Daily" ${currentUser.allowanceCycle === 'Daily' ? 'selected' : ''}>Daily Allowance</option>
+                  <option value="Weekly" ${currentUser.allowanceCycle === 'Weekly' ? 'selected' : ''}>Weekly Allowance</option>
+                  <option value="Bi-Weekly" ${currentUser.allowanceCycle === 'Bi-Weekly' ? 'selected' : ''}>Bi-Weekly Allowance</option>
+                  <option value="Monthly" ${currentUser.allowanceCycle === 'Monthly' ? 'selected' : ''}>Monthly Allowance</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="prof-budget" class="form-label">Spending Budget Goal (₱)</label>
+                <div class="input-with-prefix">
+                  <span class="currency-prefix">₱</span>
+                  <input 
+                    type="number" 
+                    id="prof-budget" 
+                    class="form-control" 
+                    value="${currentUser.budgetGoal || 1500}" 
+                    step="50" 
+                    min="0"
+                  />
+                </div>
+                <span class="form-hint">Target maximum spending per cycle</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Profile Theme Color</label>
+              <div class="color-picker-row">
+                ${colors
+                  .map(
+                    (c) => `
+                  <label class="color-swatch-option" title="${c.name}">
+                    <input 
+                      type="radio" 
+                      name="prof-avatar-color" 
+                      value="${c.hex}" 
+                      ${avatarBg === c.hex ? 'checked' : ''} 
+                    />
+                    <span class="color-swatch" style="background-color: ${c.hex};"></span>
+                  </label>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="prof-password" class="form-label">Change Password (Optional)</label>
+              <input 
+                type="password" 
+                id="prof-password" 
+                class="form-control" 
+                placeholder="Leave blank to keep current password" 
+              />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="btn-save-profile">
+                Save Profile Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+  }
+
+  addHandlerProfile(handlers) {
+    if (!this._parentElement) return;
+
+    this._parentElement.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-profile-export')) {
+        handlers.onExportCSV();
+      } else if (e.target.closest('#btn-profile-clear')) {
+        handlers.onClearData();
+      } else if (e.target.closest('#btn-profile-logout')) {
+        handlers.onLogout();
+      }
+    });
+
+    this._parentElement.addEventListener('submit', (e) => {
+      if (e.target.id !== 'form-edit-profile') return;
+      e.preventDefault();
+
+      const form = e.target;
+      const selectedColor = form.querySelector('input[name="prof-avatar-color"]:checked')?.value || '#2563eb';
+
+      const updates = {
+        fullName: form.querySelector('#prof-fullname')?.value || '',
+        studentId: form.querySelector('#prof-student-id')?.value || '',
+        email: form.querySelector('#prof-email')?.value || '',
+        course: form.querySelector('#prof-course')?.value || '',
+        university: form.querySelector('#prof-university')?.value || '',
+        allowanceCycle: form.querySelector('#prof-cycle')?.value || 'Weekly',
+        budgetGoal: form.querySelector('#prof-budget')?.value || 1500,
+        avatarColor: selectedColor,
+        newPassword: form.querySelector('#prof-password')?.value || '',
+      };
+
+      handlers.onUpdateProfile(updates);
+    });
+  }
+
+  showAlert(msg, type = 'error') {
+    const box = document.querySelector('#profile-alert-box');
+    if (!box) return;
+    box.innerHTML = `
+      <div class="alert alert-${type}">
+        <span>${this.escapeHTML(msg)}</span>
+      </div>
+    `;
+    box.classList.remove('hidden');
+  }
+}
+
+const profileView = new ProfileView();
+
+
+  // --- CONTROLLER LAYER ---
+  /**
+ * controller.js
+ * Central Application Controller for PennyWise (Multi-Page Production Edition)
+ * 
+ * Coordinates:
+ * - Authentication (Login, Register, Logout, Session Recovery)
+ * - Multi-Page Navigation Router ('dashboard', 'allowance', 'expense', 'transactions', 'profile')
+ * - All 6 View Modules (AuthView, NavigationView, DashboardView, AllowanceView, ExpenseView, TransactionView, ProfileView)
+ * - Edit Transaction Modal & In-Page Confirmation Dialog
+ * - CSV Data Export
+ */
+
+/* ==========================================================================
+   1. Toast Notification System
+   ========================================================================== */
+const showToast = function (message, type = 'success') {
+  const toastContainer = document.querySelector('#toast-container');
+  if (!toastContainer) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-message">${message}</span>`;
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('toast-fade-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+};
+
+/* ==========================================================================
+   2. Master Layout & Multi-Page Renderer
+   ========================================================================== */
+const renderApp = function () {
+  const authScreen = document.querySelector('#auth-container');
+  const appShell = document.querySelector('#app-shell');
+
+  // If no user is logged in, show Login / Register screen
+  if (!model.state.currentUser) {
+    authScreen?.classList.remove('hidden');
+    appShell?.classList.add('hidden');
+    authView.render(model.state);
+    return;
+  }
+
+  // User is logged in: hide Auth screen, show App Shell
+  authScreen?.classList.add('hidden');
+  appShell?.classList.remove('hidden');
+
+  // Render Sidebar Menu & Top Bar
+  navigationView.render(model.state);
+
+  // Toggle active page section visibility
+  const pageIds = ['dashboard', 'allowance', 'expense', 'transactions', 'profile'];
+  pageIds.forEach((id) => {
+    const el = document.querySelector(`#page-${id}`);
+    if (el) {
+      if (id === model.state.currentPage) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  });
+
+  // Render the active page's View with fresh state
+  const current = model.state.currentPage;
+  if (current === 'dashboard') {
+    dashboardView.render(model.state);
+  } else if (current === 'allowance') {
+    allowanceView.render({
+      totals: model.state.totals,
+      allowances: model.getAllowances(),
+      allowanceBreakdown: model.state.allowanceBreakdown,
+    });
+  } else if (current === 'expense') {
+    expenseView.render({
+      totals: model.state.totals,
+      expenses: model.getExpenses(),
+      categoryBreakdown: model.state.categoryBreakdown,
+    });
+  } else if (current === 'transactions') {
+    transactionView.render({
+      transactions: model.getFilteredTransactions(),
+      filter: model.state.currentFilter,
+      categories: model.getAllUniqueCategories(),
+    });
+  } else if (current === 'profile') {
+    profileView.render(model.state);
+  }
+};
+
+/* ==========================================================================
+   3. Authentication Controllers
+   ========================================================================== */
+const controlAuthSwitchMode = function (mode) {
+  model.setAuthMode(mode);
+  authView.render(model.state);
+};
+
+const controlLogin = function (email, password) {
+  try {
+    const user = model.loginUser(email, password);
+    renderApp();
+    showToast(`Welcome back, ${user.fullName}!`, 'success');
+  } catch (err) {
+    authView.showError(err.message);
+  }
+};
+
+const controlRegister = function (userData) {
+  try {
+    const user = model.registerUser(userData);
+    renderApp();
+    showToast(`Account created! Welcome to PennyWise, ${user.fullName}.`, 'success');
+  } catch (err) {
+    authView.showError(err.message);
+  }
+};
+
+const controlLogout = function () {
+  showConfirmModal(
+    'Sign Out',
+    'Are you sure you want to log out of your PennyWise account?',
+    () => {
+      model.logoutUser();
+      renderApp();
+      showToast('You have been signed out safely.', 'info');
+    }
+  );
+};
+
+/* ==========================================================================
+   4. Navigation Controller
+   ========================================================================== */
+const controlNavigate = function (targetPage) {
+  model.setPage(targetPage);
+  renderApp();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+/* ==========================================================================
+   5. Transaction CRUD Controllers
+   ========================================================================== */
+const controlAddAllowance = function (txData) {
+  try {
+    const newTx = model.addTransaction(txData);
+    renderApp();
+    showToast(`Allowance of ₱${newTx.amount.toFixed(2)} saved!`, 'success');
+  } catch (err) {
+    allowanceView.showError(err.message);
+  }
+};
+
+const controlAddExpense = function (txData) {
+  try {
+    const newTx = model.addTransaction(txData);
+    renderApp();
+    showToast(`Expense of ₱${newTx.amount.toFixed(2)} recorded!`, 'success');
+  } catch (err) {
+    expenseView.showError(err.message);
+  }
+};
+
+const controlDeleteTransaction = function (id) {
+  const tx = model.getTransactionById(id);
+  if (!tx) {
+    showToast('Transaction record not found.', 'error');
+    return;
+  }
+
+  showConfirmModal(
+    'Delete Transaction',
+    `Are you sure you want to delete "${tx.description}" (${tx.type === 'income' ? '+' : '-'}₱${tx.amount.toFixed(2)})?`,
+    () => {
+      try {
+        model.deleteTransaction(id);
+        renderApp();
+        showToast('Transaction deleted.', 'info');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+  );
+};
+
+/* ==========================================================================
+   6. Filter, Search & CSV Export Controllers
+   ========================================================================== */
+const controlFilterTransactions = function (filterOptions) {
+  model.setFilter(filterOptions);
+  transactionView.render({
+    transactions: model.getFilteredTransactions(),
+    filter: model.state.currentFilter,
+    categories: model.getAllUniqueCategories(),
+  });
+};
+
+const controlSearchTransactions = function (query) {
+  model.setFilter({ searchQuery: query });
+  transactionView.render({
+    transactions: model.getFilteredTransactions(),
+    filter: model.state.currentFilter,
+    categories: model.getAllUniqueCategories(),
+  });
+};
+
+const controlExportCSV = function () {
+  try {
+    const csvContent = model.exportTransactionsCSV();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('href', url);
+    link.setAttribute('download', `PennyWise_Transactions_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Transactions exported to CSV!', 'success');
+  } catch (err) {
+    showToast('Failed to export CSV.', 'error');
+  }
+};
+
+/* ==========================================================================
+   7. Profile & Account Settings Controllers
+   ========================================================================== */
+const controlUpdateProfile = function (updates) {
+  try {
+    model.updateUserProfile(updates);
+    renderApp();
+    profileView.showAlert('Your student profile and budget settings have been updated!', 'success');
+    showToast('Profile saved!', 'success');
+  } catch (err) {
+    profileView.showAlert(err.message, 'error');
+  }
+};
+
+const controlClearAllData = function () {
+  showConfirmModal(
+    'Clear All Records',
+    'Are you sure you want to permanently delete all your recorded allowances and expenses? This cannot be undone.',
+    () => {
+      model.clearAllUserTransactions();
+      renderApp();
+      showToast('All transaction records cleared.', 'info');
+    }
+  );
+};
+
+/* ==========================================================================
+   8. Edit Transaction Modal & Confirmation Modal
+   ========================================================================== */
+const editModal = document.querySelector('#edit-modal');
+const editForm = document.querySelector('#form-edit-transaction');
+const editErrorBox = document.querySelector('#edit-error-box');
+let currentEditingId = null;
+
+const controlEditTransaction = function (id) {
+  const tx = model.getTransactionById(id);
+  if (!tx) {
+    showToast('Transaction not found.', 'error');
+    return;
+  }
+
+  currentEditingId = tx.id;
+  const modalTitle = document.querySelector('#edit-modal-title');
+  const amountInput = document.querySelector('#edit-amount');
+  const descInput = document.querySelector('#edit-desc');
+  const categorySelect = document.querySelector('#edit-category');
+  const methodSelect = document.querySelector('#edit-method');
+  const dateInput = document.querySelector('#edit-date');
+
+  if (modalTitle) {
+    modalTitle.textContent = `Edit ${tx.type === 'income' ? 'Allowance' : 'Expense'}`;
+  }
+  if (amountInput) amountInput.value = tx.amount;
+  if (descInput) descInput.value = tx.description;
+  if (dateInput) dateInput.value = tx.date;
+  if (methodSelect) methodSelect.value = tx.paymentMethod || 'Cash';
+
+  if (categorySelect) {
+    if (tx.type === 'income') {
+      categorySelect.innerHTML = `
+        <option value="Weekly Allowance">Weekly Allowance</option>
+        <option value="Monthly Allowance">Monthly Allowance</option>
+        <option value="Parents / Family">Parents / Family Support</option>
+        <option value="Scholarship / Stipend">Scholarship / Stipend</option>
+        <option value="Part-time Job">Part-time Job Earnings</option>
+        <option value="Other Allowance">Other Income</option>
+      `;
+    } else {
+      categorySelect.innerHTML = `
+        <option value="Food & Drinks">Food & Drinks</option>
+        <option value="Transportation">Transportation / Commute</option>
+        <option value="School Supplies">School Supplies & Printing</option>
+        <option value="Boarding House / Rent">Boarding House / Dorm Rent</option>
+        <option value="Utilities & Load">Mobile Load & Internet</option>
+        <option value="Personal Care">Personal Care & Hygiene</option>
+        <option value="Leisure & Entertainment">Leisure & Socials</option>
+        <option value="Other Expenses">Other Necessities</option>
+      `;
+    }
+    categorySelect.value = tx.category;
+  }
+
+  if (editErrorBox) {
+    editErrorBox.innerHTML = '';
+    editErrorBox.classList.add('hidden');
+  }
+
+  editModal?.classList.remove('hidden');
+};
+
+const closeEditModal = function () {
+  currentEditingId = null;
+  editModal?.classList.add('hidden');
+  editForm?.reset();
+};
+
+const setupEditModalListeners = function () {
+  document.querySelector('#btn-close-modal')?.addEventListener('click', closeEditModal);
+  document.querySelector('#btn-cancel-edit')?.addEventListener('click', closeEditModal);
+
+  editModal?.addEventListener('click', (e) => {
+    if (e.target === editModal) closeEditModal();
+  });
+
+  editForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!currentEditingId) return;
+
+    const amountInput = editForm.querySelector('#edit-amount');
+    const descInput = editForm.querySelector('#edit-desc');
+    const categorySelect = editForm.querySelector('#edit-category');
+    const methodSelect = editForm.querySelector('#edit-method');
+    const dateInput = editForm.querySelector('#edit-date');
+
+    const rawAmount = amountInput.value.trim();
+    const rawDesc = descInput.value.trim();
+    const amount = parseFloat(rawAmount);
+
+    if (!rawDesc) {
+      if (editErrorBox) {
+        editErrorBox.innerHTML = '<div class="alert alert-error"><span>Description cannot be empty.</span></div>';
+        editErrorBox.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (rawAmount === '' || isNaN(amount) || amount <= 0) {
+      if (editErrorBox) {
+        editErrorBox.innerHTML = '<div class="alert alert-error"><span>Please enter an amount greater than ₱0.00.</span></div>';
+        editErrorBox.classList.remove('hidden');
+      }
+      return;
+    }
+
+    try {
+      model.editTransaction(currentEditingId, {
+        amount,
+        description: rawDesc,
+        category: categorySelect.value,
+        paymentMethod: methodSelect?.value || 'Cash',
+        date: dateInput.value,
+      });
+
+      closeEditModal();
+      renderApp();
+      showToast('Transaction updated!', 'success');
+    } catch (err) {
+      if (editErrorBox) {
+        editErrorBox.innerHTML = `<div class="alert alert-error"><span>${err.message}</span></div>`;
+        editErrorBox.classList.remove('hidden');
+      }
+    }
+  });
+};
+
+/* In-Page Confirmation Modal */
+const confirmModal = document.querySelector('#confirm-modal');
+const confirmTitle = document.querySelector('#confirm-modal-title');
+const confirmMessage = document.querySelector('#confirm-modal-message');
+let confirmCallback = null;
+
+const showConfirmModal = function (title, message, onConfirm) {
+  if (!confirmModal) {
+    onConfirm();
+    return;
+  }
+  if (confirmTitle) confirmTitle.textContent = title;
+  if (confirmMessage) confirmMessage.textContent = message;
+  confirmCallback = onConfirm;
+  confirmModal.classList.remove('hidden');
+};
+
+const closeConfirmModal = function () {
+  confirmCallback = null;
+  confirmModal?.classList.add('hidden');
+};
+
+const setupConfirmModalListeners = function () {
+  document.querySelector('#btn-close-confirm-modal')?.addEventListener('click', closeConfirmModal);
+  document.querySelector('#btn-cancel-confirm')?.addEventListener('click', closeConfirmModal);
+  document.querySelector('#btn-proceed-confirm')?.addEventListener('click', () => {
+    if (typeof confirmCallback === 'function') {
+      const cb = confirmCallback;
+      closeConfirmModal();
+      cb();
+    } else {
+      closeConfirmModal();
+    }
+  });
+  confirmModal?.addEventListener('click', (e) => {
+    if (e.target === confirmModal) closeConfirmModal();
+  });
+};
+
+/* ==========================================================================
+   9. Application Initialization
+   ========================================================================== */
+const init = function () {
+  // 1. Restore session or prepare login screen
+  model.initSession();
+
+  // 2. Render initial view state
+  renderApp();
+
+  // 3. Bind Publisher-Subscriber Handlers across all Views
+  authView.addHandlerAuth({
+    onSwitchMode: controlAuthSwitchMode,
+    onLogin: controlLogin,
+    onRegister: controlRegister,
+  });
+
+  navigationView.addHandlerNavigate(controlNavigate);
+  navigationView.addHandlerLogout(controlLogout);
+
+  dashboardView.addHandlerQuickNav(controlNavigate);
+
+  allowanceView.addHandlerActions({
+    onAdd: controlAddAllowance,
+    onEdit: controlEditTransaction,
+    onDelete: controlDeleteTransaction,
+  });
+
+  expenseView.addHandlerActions({
+    onAdd: controlAddExpense,
+    onEdit: controlEditTransaction,
+    onDelete: controlDeleteTransaction,
+  });
+
+  transactionView.addHandlerActions({
+    onEdit: controlEditTransaction,
+    onDelete: controlDeleteTransaction,
+    onFilter: controlFilterTransactions,
+    onSearch: controlSearchTransactions,
+    onExportCSV: controlExportCSV,
+  });
+
+  profileView.addHandlerProfile({
+    onUpdateProfile: controlUpdateProfile,
+    onExportCSV: controlExportCSV,
+    onClearData: controlClearAllData,
+    onLogout: controlLogout,
+  });
+
+  setupEditModalListeners();
+  setupConfirmModalListeners();
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PennyWise — Student Allowance & Expense Management System</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- ========================================================================
+       1. AUTHENTICATION CONTAINER (Login & Registration Pages)
+       Shown when user is signed out
+       ======================================================================== -->
+  <div id="auth-container" class="auth-screen">
+    <!-- Populated dynamically by AuthView.js -->
+  </div>
+
+  <!-- ========================================================================
+       2. MAIN APPLICATION SHELL (Sidebar Menu + Topbar + Multi-Page Views)
+       Shown when user is signed in
+       ======================================================================== -->
+  <div id="app-shell" class="app-shell hidden">
+    <!-- Mobile Drawer Backdrop -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+    <!-- Left Sidebar Menu (Populated by NavigationView.js) -->
+    <aside id="app-sidebar" class="app-sidebar">
+      <!-- Navigation menu links & wallet card -->
+    </aside>
+
+    <!-- Right Content Area -->
+    <div class="app-main-area">
+      <!-- Top Header Bar (Populated by NavigationView.js) -->
+      <header id="app-topbar" class="app-topbar">
+        <!-- Page title, quick action buttons & profile pill -->
+      </header>
+
+      <!-- Multi-Page Content Viewport -->
+      <main class="page-viewport">
+        <!-- PAGE 1: Financial Dashboard (Member 1 - DashboardView.js) -->
+        <section id="page-dashboard" class="page-section">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 2: Allowance Manager (Member 2 - AllowanceView.js) -->
+        <section id="page-allowance" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 3: Expense Tracker (Member 3 - ExpenseView.js) -->
+        <section id="page-expense" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 4: Transaction History (Member 4 - TransactionView.js) -->
+        <section id="page-transactions" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+
+        <!-- PAGE 5: Student Profile & Settings (ProfileView.js) -->
+        <section id="page-profile" class="page-section hidden">
+          <!-- Populated dynamically -->
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       3. EDIT TRANSACTION MODAL DIALOG
+       ======================================================================== -->
+  <div id="edit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="edit-modal-title" class="modal-title">Edit Transaction</h3>
+        <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="form-edit-transaction" class="modal-body entry-form" novalidate>
+        <div id="edit-error-box" class="form-alert-box hidden"></div>
+
+        <div class="form-group">
+          <label for="edit-amount" class="form-label">Amount (₱) <span class="required">*</span></label>
+          <div class="input-with-prefix">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="edit-amount" class="form-control" step="0.01" min="0.01" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-desc" class="form-label">Description <span class="required">*</span></label>
+          <input type="text" id="edit-desc" class="form-control" maxlength="80" required />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit-category" class="form-label">Category</label>
+            <select id="edit-category" class="form-control"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-method" class="form-label">Payment Method</label>
+            <select id="edit-method" class="form-control">
+              <option value="Cash">Cash</option>
+              <option value="GCash">GCash</option>
+              <option value="Maya">Maya</option>
+              <option value="Bank Transfer">Bank Transfer / Card</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-date" class="form-label">Date</label>
+          <input type="date" id="edit-date" class="form-control" required />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btn-cancel-edit" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="btn-save-edit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       4. IN-PAGE CONFIRMATION MODAL DIALOG
+       ======================================================================== -->
+  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="confirm-modal-title" class="modal-title">Confirm Action</h3>
+        <button type="button" id="btn-close-confirm-modal" class="btn-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message" class="confirm-modal-text">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-confirm" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="btn-proceed-confirm" class="btn btn-rose">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-stack" aria-live="polite"></div>
+
+  <!-- Application Controller Entry Point (ES Module) -->
+  <script type="module" src="js/controller.js"></script>
+</body>
+</html>
