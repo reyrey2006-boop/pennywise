@@ -234,3 +234,13 @@ addHandlerActions(handlers) {
         handlers.onExportCSV();
       }
     });
+
+  this._parentElement.addEventListener('change', (e) => {
+      if (e.target.id === 'tx-filter-type') {
+        handlers.onFilter({ type: e.target.value });
+      } else if (e.target.id === 'tx-filter-category') {
+        handlers.onFilter({ category: e.target.value });
+      } else if (e.target.id === 'tx-sort-by') {
+        handlers.onFilter({ sortBy: e.target.value });
+      }
+    });
