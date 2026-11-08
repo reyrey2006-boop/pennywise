@@ -248,3 +248,40 @@ class ExpenseView extends View {
     this._parentElement.addEventListener('submit', (e) => {
       if (e.target.id !== 'form-add-expense') return;
       e.preventDefault();
+
+     const form = e.target;
+      const amountInput = form.querySelector('#expense-amount');
+      const descInput = form.querySelector('#expense-desc');
+      const categorySelect = form.querySelector('#expense-category');
+      const methodSelect = form.querySelector('#expense-method');
+      const dateInput = form.querySelector('#expense-date');
+
+      const rawAmount = amountInput.value.trim();
+      const rawDesc = descInput.value.trim();
+      const amount = parseFloat(rawAmount);
+
+      if (!rawDesc) {
+        this.showError('Description is required. Please specify what you spent on.');
+        descInput.focus();
+        return;
+      }
+
+      if (rawAmount === '' || isNaN(amount) || amount <= 0) {
+        this.showError('Please enter a valid expense amount greater than ₱0.00.');
+        amountInput.focus();
+        return;
+      }
+
+      this.hideError();
+
+      handlers.onAdd({
+        type: 'expense',
+        amount: Number(amount.toFixed(2)),
+        description: rawDesc,
+        category: categorySelect.value || 'Food & Drinks',
+        paymentMethod: methodSelect?.value || 'Cash',
+        date: dateInput.value || new Date().toISOString().split('T')[0],
+      });
+    });
+  }
+
