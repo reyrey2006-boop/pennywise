@@ -9,7 +9,7 @@
  * - Edit Transaction Modal & In-Page Confirmation Dialog
  * - CSV Data Export
  */
-
+ 
 import * as model from './model.js';
 import authView from './views/AuthView.js';
 import navigationView from './views/NavigationView.js';
@@ -18,32 +18,32 @@ import allowanceView from './views/AllowanceView.js';
 import expenseView from './views/ExpenseView.js';
 import transactionView from './views/TransactionView.js';
 import profileView from './views/ProfileView.js';
-
+ 
 /* ==========================================================================
    1. Toast Notification System
    ========================================================================== */
 const showToast = function (message, type = 'success') {
   const toastContainer = document.querySelector('#toast-container');
   if (!toastContainer) return;
-
+ 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.innerHTML = `<span class="toast-message">${message}</span>`;
   toastContainer.appendChild(toast);
-
+ 
   setTimeout(() => {
     toast.classList.add('toast-fade-out');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 };
-
+ 
 /* ==========================================================================
    2. Master Layout & Multi-Page Renderer
    ========================================================================== */
 const renderApp = function () {
   const authScreen = document.querySelector('#auth-container');
   const appShell = document.querySelector('#app-shell');
-
+ 
   // If no user is logged in, show Login / Register screen
   if (!model.state.currentUser) {
     authScreen?.classList.remove('hidden');
@@ -51,14 +51,14 @@ const renderApp = function () {
     authView.render(model.state);
     return;
   }
-
+ 
   // User is logged in: hide Auth screen, show App Shell
   authScreen?.classList.add('hidden');
   appShell?.classList.remove('hidden');
-
+ 
   // Render Sidebar Menu & Top Bar
   navigationView.render(model.state);
-
+ 
   // Toggle active page section visibility
   const pageIds = ['dashboard', 'allowance', 'expense', 'transactions', 'profile'];
   pageIds.forEach((id) => {
@@ -71,7 +71,7 @@ const renderApp = function () {
       }
     }
   });
-
+ 
   // Render the active page's View with fresh state
   const current = model.state.currentPage;
   if (current === 'dashboard') {
@@ -98,7 +98,7 @@ const renderApp = function () {
     profileView.render(model.state);
   }
 };
-
+ 
 /* ==========================================================================
    3. Authentication Controllers
    ========================================================================== */
@@ -106,7 +106,7 @@ const controlAuthSwitchMode = function (mode) {
   model.setAuthMode(mode);
   authView.render(model.state);
 };
-
+ 
 const controlLogin = function (email, password) {
   try {
     const user = model.loginUser(email, password);
@@ -116,7 +116,7 @@ const controlLogin = function (email, password) {
     authView.showError(err.message);
   }
 };
-
+ 
 const controlRegister = function (userData) {
   try {
     const user = model.registerUser(userData);
@@ -126,7 +126,7 @@ const controlRegister = function (userData) {
     authView.showError(err.message);
   }
 };
-
+ 
 const controlLogout = function () {
   showConfirmModal(
     'Sign Out',
@@ -138,7 +138,7 @@ const controlLogout = function () {
     }
   );
 };
-
+ 
 /* ==========================================================================
    4. Navigation Controller
    ========================================================================== */
@@ -147,7 +147,7 @@ const controlNavigate = function (targetPage) {
   renderApp();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
-
+ 
 /* ==========================================================================
    5. Transaction CRUD Controllers
    ========================================================================== */
@@ -160,7 +160,7 @@ const controlAddAllowance = function (txData) {
     allowanceView.showError(err.message);
   }
 };
-
+ 
 const controlAddExpense = function (txData) {
   try {
     const newTx = model.addTransaction(txData);
@@ -170,14 +170,14 @@ const controlAddExpense = function (txData) {
     expenseView.showError(err.message);
   }
 };
-
+ 
 const controlDeleteTransaction = function (id) {
   const tx = model.getTransactionById(id);
   if (!tx) {
     showToast('Transaction record not found.', 'error');
     return;
   }
-
+ 
   showConfirmModal(
     'Delete Transaction',
     `Are you sure you want to delete "${tx.description}" (${tx.type === 'income' ? '+' : '-'}₱${tx.amount.toFixed(2)})?`,
@@ -192,7 +192,17 @@ const controlDeleteTransaction = function (id) {
     }
   );
 };
-
+ 
+const controlSetPeriodBudget = function (periodStart, amount) {
+  try {
+    model.setPeriodBudget(periodStart, amount);
+    renderApp();
+    showToast(amount === null ? 'Budget reset to your default.' : `Budget set to ₱${amount.toFixed(2)}.`, 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+};
+ 
 /* ==========================================================================
    6. Filter, Search & CSV Export Controllers
    ========================================================================== */
@@ -204,7 +214,7 @@ const controlFilterTransactions = function (filterOptions) {
     categories: model.getAllUniqueCategories(),
   });
 };
-
+ 
 const controlSearchTransactions = function (query) {
   model.setFilter({ searchQuery: query });
   transactionView.render({
@@ -213,7 +223,7 @@ const controlSearchTransactions = function (query) {
     categories: model.getAllUniqueCategories(),
   });
 };
-
+ 
 const controlExportCSV = function () {
   try {
     const csvContent = model.exportTransactionsCSV();
@@ -232,7 +242,7 @@ const controlExportCSV = function () {
     showToast('Failed to export CSV.', 'error');
   }
 };
-
+ 
 /* ==========================================================================
    7. Profile & Account Settings Controllers
    ========================================================================== */
@@ -246,7 +256,7 @@ const controlUpdateProfile = function (updates) {
     profileView.showAlert(err.message, 'error');
   }
 };
-
+ 
 const controlClearAllData = function () {
   showConfirmModal(
     'Clear All Records',
@@ -258,7 +268,7 @@ const controlClearAllData = function () {
     }
   );
 };
-
+ 
 /* ==========================================================================
    8. Edit Transaction Modal & Confirmation Modal
    ========================================================================== */
@@ -266,14 +276,14 @@ const editModal = document.querySelector('#edit-modal');
 const editForm = document.querySelector('#form-edit-transaction');
 const editErrorBox = document.querySelector('#edit-error-box');
 let currentEditingId = null;
-
+ 
 const controlEditTransaction = function (id) {
   const tx = model.getTransactionById(id);
   if (!tx) {
     showToast('Transaction not found.', 'error');
     return;
   }
-
+ 
   currentEditingId = tx.id;
   const modalTitle = document.querySelector('#edit-modal-title');
   const amountInput = document.querySelector('#edit-amount');
@@ -281,7 +291,7 @@ const controlEditTransaction = function (id) {
   const categorySelect = document.querySelector('#edit-category');
   const methodSelect = document.querySelector('#edit-method');
   const dateInput = document.querySelector('#edit-date');
-
+ 
   if (modalTitle) {
     modalTitle.textContent = `Edit ${tx.type === 'income' ? 'Allowance' : 'Expense'}`;
   }
@@ -289,7 +299,7 @@ const controlEditTransaction = function (id) {
   if (descInput) descInput.value = tx.description;
   if (dateInput) dateInput.value = tx.date;
   if (methodSelect) methodSelect.value = tx.paymentMethod || 'Cash';
-
+ 
   if (categorySelect) {
     if (tx.type === 'income') {
       categorySelect.innerHTML = `
@@ -314,43 +324,43 @@ const controlEditTransaction = function (id) {
     }
     categorySelect.value = tx.category;
   }
-
+ 
   if (editErrorBox) {
     editErrorBox.innerHTML = '';
     editErrorBox.classList.add('hidden');
   }
-
+ 
   editModal?.classList.remove('hidden');
 };
-
+ 
 const closeEditModal = function () {
   currentEditingId = null;
   editModal?.classList.add('hidden');
   editForm?.reset();
 };
-
+ 
 const setupEditModalListeners = function () {
   document.querySelector('#btn-close-modal')?.addEventListener('click', closeEditModal);
   document.querySelector('#btn-cancel-edit')?.addEventListener('click', closeEditModal);
-
+ 
   editModal?.addEventListener('click', (e) => {
     if (e.target === editModal) closeEditModal();
   });
-
+ 
   editForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!currentEditingId) return;
-
+ 
     const amountInput = editForm.querySelector('#edit-amount');
     const descInput = editForm.querySelector('#edit-desc');
     const categorySelect = editForm.querySelector('#edit-category');
     const methodSelect = editForm.querySelector('#edit-method');
     const dateInput = editForm.querySelector('#edit-date');
-
+ 
     const rawAmount = amountInput.value.trim();
     const rawDesc = descInput.value.trim();
     const amount = parseFloat(rawAmount);
-
+ 
     if (!rawDesc) {
       if (editErrorBox) {
         editErrorBox.innerHTML = '<div class="alert alert-error"><span>Description cannot be empty.</span></div>';
@@ -358,7 +368,7 @@ const setupEditModalListeners = function () {
       }
       return;
     }
-
+ 
     if (rawAmount === '' || isNaN(amount) || amount <= 0) {
       if (editErrorBox) {
         editErrorBox.innerHTML = '<div class="alert alert-error"><span>Please enter an amount greater than ₱0.00.</span></div>';
@@ -366,7 +376,7 @@ const setupEditModalListeners = function () {
       }
       return;
     }
-
+ 
     try {
       model.editTransaction(currentEditingId, {
         amount,
@@ -375,7 +385,7 @@ const setupEditModalListeners = function () {
         paymentMethod: methodSelect?.value || 'Cash',
         date: dateInput.value,
       });
-
+ 
       closeEditModal();
       renderApp();
       showToast('Transaction updated!', 'success');
@@ -387,13 +397,13 @@ const setupEditModalListeners = function () {
     }
   });
 };
-
+ 
 /* In-Page Confirmation Modal */
 const confirmModal = document.querySelector('#confirm-modal');
 const confirmTitle = document.querySelector('#confirm-modal-title');
 const confirmMessage = document.querySelector('#confirm-modal-message');
 let confirmCallback = null;
-
+ 
 const showConfirmModal = function (title, message, onConfirm) {
   if (!confirmModal) {
     onConfirm();
@@ -404,12 +414,12 @@ const showConfirmModal = function (title, message, onConfirm) {
   confirmCallback = onConfirm;
   confirmModal.classList.remove('hidden');
 };
-
+ 
 const closeConfirmModal = function () {
   confirmCallback = null;
   confirmModal?.classList.add('hidden');
 };
-
+ 
 const setupConfirmModalListeners = function () {
   document.querySelector('#btn-close-confirm-modal')?.addEventListener('click', closeConfirmModal);
   document.querySelector('#btn-cancel-confirm')?.addEventListener('click', closeConfirmModal);
@@ -426,41 +436,42 @@ const setupConfirmModalListeners = function () {
     if (e.target === confirmModal) closeConfirmModal();
   });
 };
-
+ 
 /* ==========================================================================
    9. Application Initialization
    ========================================================================== */
 const init = function () {
   // 1. Restore session or prepare login screen
   model.initSession();
-
+ 
   // 2. Render initial view state
   renderApp();
-
+ 
   // 3. Bind Publisher-Subscriber Handlers across all Views
   authView.addHandlerAuth({
     onSwitchMode: controlAuthSwitchMode,
     onLogin: controlLogin,
     onRegister: controlRegister,
   });
-
+ 
   navigationView.addHandlerNavigate(controlNavigate);
   navigationView.addHandlerLogout(controlLogout);
-
+ 
   dashboardView.addHandlerQuickNav(controlNavigate);
-
+  dashboardView.addHandlerPeriodBudget(controlSetPeriodBudget);
+ 
   allowanceView.addHandlerActions({
     onAdd: controlAddAllowance,
     onEdit: controlEditTransaction,
     onDelete: controlDeleteTransaction,
   });
-
+ 
   expenseView.addHandlerActions({
     onAdd: controlAddExpense,
     onEdit: controlEditTransaction,
     onDelete: controlDeleteTransaction,
   });
-
+ 
   transactionView.addHandlerActions({
     onEdit: controlEditTransaction,
     onDelete: controlDeleteTransaction,
@@ -468,20 +479,33 @@ const init = function () {
     onSearch: controlSearchTransactions,
     onExportCSV: controlExportCSV,
   });
-
+ 
   profileView.addHandlerProfile({
     onUpdateProfile: controlUpdateProfile,
     onExportCSV: controlExportCSV,
     onClearData: controlClearAllData,
     onLogout: controlLogout,
   });
-
+ 
   setupEditModalListeners();
   setupConfirmModalListeners();
+ 
+  // Detect a new budget period (e.g. Monday arrives) while the app stays open.
+  const checkNewPeriod = () => {
+    if (model.refreshPeriodIfChanged()) {
+      renderApp();
+      showToast('A new budget period has started — your budget is fresh!', 'info');
+    }
+  };
+  setInterval(checkNewPeriod, 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) checkNewPeriod();
+  });
 };
-
+ 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
 }
+ 

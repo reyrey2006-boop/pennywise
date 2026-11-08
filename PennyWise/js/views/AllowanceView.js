@@ -8,20 +8,20 @@
  * - Displays Allowance summary metrics (Total Allowance Received, Number of Allowance Records, Sources Breakdown).
  * - Displays a dedicated Allowance Records table with direct Edit and Delete buttons.
  */
-
+ 
 import View from './View.js';
-
+ 
 class AllowanceView extends View {
   _parentElement = document.querySelector('#page-allowance');
-
+ 
   _generateMarkup() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = this.todayISO();
     const { totals, allowances, allowanceBreakdown } = this._data || {
       totals: { totalIncome: 0, allowanceCount: 0 },
       allowances: [],
       allowanceBreakdown: [],
     };
-
+ 
     return `
       <!-- Allowance Summary Header Banner -->
       <div class="page-summary-banner banner-green">
@@ -38,7 +38,7 @@ class AllowanceView extends View {
           <strong class="banner-stat-value">${this.formatCurrency(totals.balance)}</strong>
         </div>
       </div>
-
+ 
       <!-- Main 2-Column Layout: Form on Left, Allowance Records & Source Breakdown on Right -->
       <div class="page-split-layout">
         <!-- Left Column: Add Allowance Form -->
@@ -50,10 +50,10 @@ class AllowanceView extends View {
             </div>
             <p class="form-subheading">Record money received from parents, scholarships, or part-time work.</p>
           </div>
-
+ 
           <form id="form-add-allowance" class="entry-form" novalidate>
             <div id="allowance-error-box" class="form-alert-box hidden"></div>
-
+ 
             <div class="form-group">
               <label for="allowance-amount" class="form-label">Amount Received (₱) <span class="required">*</span></label>
               <div class="input-with-prefix">
@@ -69,7 +69,7 @@ class AllowanceView extends View {
                 />
               </div>
             </div>
-
+ 
             <div class="form-group">
               <label for="allowance-desc" class="form-label">Description / Note <span class="required">*</span></label>
               <input 
@@ -81,7 +81,7 @@ class AllowanceView extends View {
                 required 
               />
             </div>
-
+ 
             <div class="form-row-2">
               <div class="form-group">
                 <label for="allowance-category" class="form-label">Allowance Source</label>
@@ -94,7 +94,7 @@ class AllowanceView extends View {
                   <option value="Other Allowance">Other Income</option>
                 </select>
               </div>
-
+ 
               <div class="form-group">
                 <label for="allowance-method" class="form-label">Received Via</label>
                 <select id="allowance-method" class="form-control">
@@ -105,12 +105,12 @@ class AllowanceView extends View {
                 </select>
               </div>
             </div>
-
+ 
             <div class="form-group">
               <label for="allowance-date" class="form-label">Date Received</label>
               <input type="date" id="allowance-date" class="form-control" value="${today}" />
             </div>
-
+ 
             <div class="form-actions">
               <button type="submit" class="btn btn-primary btn-green" id="btn-submit-allowance">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
@@ -122,7 +122,7 @@ class AllowanceView extends View {
             </div>
           </form>
         </div>
-
+ 
         <!-- Right Column: Allowance History & Source Breakdown -->
         <div class="page-right-stack">
           <!-- Allowance Source Breakdown -->
@@ -157,7 +157,7 @@ class AllowanceView extends View {
               }
             </div>
           </div>
-
+ 
           <!-- Recorded Allowances Table -->
           <div class="card panel-card">
             <div class="panel-header">
@@ -214,10 +214,10 @@ class AllowanceView extends View {
       </div>
     `;
   }
-
+ 
 addHandlerActions(handlers) {
     if (!this._parentElement) return;
-
+ 
     this._parentElement.addEventListener('click', (e) => {
       const resetBtn = e.target.closest('#btn-reset-allowance');
       if (resetBtn) {
@@ -226,63 +226,63 @@ addHandlerActions(handlers) {
           form.reset();
           this.hideError();
           const dateInput = form.querySelector('#allowance-date');
-          if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+          if (dateInput) dateInput.value = this.todayISO();
         }
         return;
       }
-
+ 
       const editBtn = e.target.closest('.btn-edit');
       if (editBtn && handlers.onEdit) {
         handlers.onEdit(editBtn.dataset.id);
         return;
       }
-
+ 
       const deleteBtn = e.target.closest('.btn-delete');
       if (deleteBtn && handlers.onDelete) {
         handlers.onDelete(deleteBtn.dataset.id);
       }
     });
-
+ 
     this._parentElement.addEventListener('submit', (e) => {
       if (e.target.id !== 'form-add-allowance') return;
       e.preventDefault();
-
+ 
       const form = e.target;
       const amountInput = form.querySelector('#allowance-amount');
       const descInput = form.querySelector('#allowance-desc');
       const categorySelect = form.querySelector('#allowance-category');
       const methodSelect = form.querySelector('#allowance-method');
       const dateInput = form.querySelector('#allowance-date');
-
+ 
       const rawAmount = amountInput.value.trim();
       const rawDesc = descInput.value.trim();
       const amount = parseFloat(rawAmount);
-
+ 
       if (!rawDesc) {
         this.showError('Description is required. Please specify where this allowance came from.');
         descInput.focus();
         return;
       }
-
+ 
       if (rawAmount === '' || isNaN(amount) || amount <= 0) {
         this.showError('Please enter a valid allowance amount greater than ₱0.00.');
         amountInput.focus();
         return;
       }
-
+ 
       this.hideError();
-
+ 
       handlers.onAdd({
         type: 'income',
         amount: Number(amount.toFixed(2)),
         description: rawDesc,
         category: categorySelect.value || 'Weekly Allowance',
         paymentMethod: methodSelect?.value || 'Cash',
-        date: dateInput.value || new Date().toISOString().split('T')[0],
+        date: dateInput.value || this.todayISO(),
       });
     });
   }
-
+ 
 showError(msg) {
     const errorBox = document.querySelector('#allowance-error-box');
     if (!errorBox) return;
@@ -296,7 +296,7 @@ showError(msg) {
     `;
     errorBox.classList.remove('hidden');
   }
-
+ 
   hideError() {
     const errorBox = document.querySelector('#allowance-error-box');
     if (errorBox) {
@@ -305,5 +305,6 @@ showError(msg) {
     }
   }
 }
-
+ 
 export default new AllowanceView();
+ 

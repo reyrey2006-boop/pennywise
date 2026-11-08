@@ -10,11 +10,11 @@
  * - Automatic Derived Financial Calculations (Balance, Total Allowance, Total Expenses, Daily Average, Savings Rate, Category Breakdown)
  * - CSV Export & Account Data Management
  */
-
+ 
 const USERS_STORAGE_KEY = 'pennywise_users_db_v2';
 const SESSION_STORAGE_KEY = 'pennywise_active_session_v2';
 const TX_STORAGE_PREFIX = 'pennywise_tx_user_';
-
+ 
 export const state = {
   currentUser: null,        // null when logged out, or user object when logged in
   currentPage: 'dashboard', // 'dashboard' | 'allowance' | 'expense' | 'transactions' | 'profile'
@@ -31,8 +31,14 @@ export const state = {
     budgetGoal: 2000,
     budgetRemaining: 2000,
     budgetUsedPercent: 0,
+    periodExpenses: 0,
+    periodStart: '',
+    periodEnd: '',
+    periodDaysLeft: 0,
+    previousPeriod: null,
   },
   categoryBreakdown: [],
+  periodHistory: [],
   allowanceBreakdown: [],
   currentFilter: {
     type: 'all',
@@ -41,7 +47,59 @@ export const state = {
     sortBy: 'newest', // 'newest' | 'oldest' | 'highest' | 'lowest'
   },
 };
-
+ 
+ 
+/* ==========================================================================
+   Budget Periods (Daily / Weekly / Bi-Weekly / Monthly)
+   Each period gets a fresh budget; spending is counted per period.
+   All dates are LOCAL (never toISOString, which is UTC and shifts the date).
+   ========================================================================== */
+const pad2 = (n) => String(n).padStart(2, '0');
+const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const fromISO = (str) => {
+  const [y, m, d] = String(str).split('-').map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+};
+export const todayISO = () => toISO(new Date());
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const mondayOf = (d) => addDays(d, -((d.getDay() + 6) % 7));
+ 
+/** Returns { start, end } (ISO strings, inclusive) of the period containing `date`. */
+export const getPeriod = function (cycle, date = new Date(), anchorISO = null) {
+  const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  let start;
+  let end;
+  if (cycle === 'Daily') {
+    start = end = day;
+  } else if (cycle === 'Monthly') {
+    start = new Date(day.getFullYear(), day.getMonth(), 1);
+    end = new Date(day.getFullYear(), day.getMonth() + 1, 0);
+  } else if (cycle === 'Bi-Weekly') {
+    const anchor = mondayOf(anchorISO ? fromISO(anchorISO) : day);
+    const diff = Math.round((mondayOf(day) - anchor) / 86400000);
+    const blocks = Math.floor(diff / 14);
+    start = addDays(anchor, blocks * 14);
+    end = addDays(start, 13);
+  } else {
+    start = mondayOf(day); // Weekly (default): Monday - Sunday
+    end = addDays(start, 6);
+  }
+  return { start: toISO(start), end: toISO(end) };
+};
+ 
+const currentPeriod = function () {
+  const u = state.currentUser;
+  return getPeriod(u?.allowanceCycle || 'Weekly', new Date(), u?.createdAt || null);
+};
+ 
+/** True when a new budget period has begun since totals were last calculated. */
+export const refreshPeriodIfChanged = function () {
+  if (!state.currentUser) return false;
+  if (currentPeriod().start === state.totals.periodStart) return false;
+  calculateTotals();
+  return true;
+};
+ 
 /* ==========================================================================
    1. Storage Helpers
    ========================================================================== */
@@ -57,7 +115,7 @@ const getStoredUsers = function () {
   }
   return [];
 };
-
+ 
 const saveStoredUsers = function (users) {
   try {
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
@@ -65,7 +123,7 @@ const saveStoredUsers = function (users) {
     console.error('Error saving users to localStorage:', err);
   }
 };
-
+ 
 const persistCurrentUserTransactions = function () {
   if (!state.currentUser) return;
   try {
@@ -75,7 +133,7 @@ const persistCurrentUserTransactions = function () {
     console.error('Error saving user transactions:', err);
   }
 };
-
+ 
 const loadUserTransactions = function (userId) {
   try {
     const txKey = TX_STORAGE_PREFIX + userId;
@@ -95,11 +153,11 @@ const loadUserTransactions = function (userId) {
   persistCurrentUserTransactions();
   calculateTotals();
 };
-
+ 
 /* ==========================================================================
    2. Authentication & Session Management
    ========================================================================== */
-
+ 
 /**
  * Restore active session on app boot
  */
@@ -122,7 +180,7 @@ export const initSession = function () {
   state.currentUser = null;
   state.transactions = [];
 };
-
+ 
 /**
  * Register a brand new student account
  * @param {Object} userData { fullName, email, password, studentId, course, university, allowanceCycle, budgetGoal }
@@ -131,20 +189,20 @@ export const registerUser = function (userData) {
   const fullName = (userData.fullName || '').trim();
   const email = (userData.email || '').trim().toLowerCase();
   const password = userData.password || '';
-
+ 
   if (!fullName) throw new Error('Please enter your full name.');
   if (!email || !email.includes('@')) throw new Error('Please enter a valid email address.');
   if (password.length < 6) throw new Error('Password must be at least 6 characters long.');
-
+ 
   const users = getStoredUsers();
   const existing = users.find((u) => u.email.toLowerCase() === email);
   if (existing) {
     throw new Error('An account with this email already exists. Please log in instead.');
   }
-
+ 
   const colors = ['#2563eb', '#059669', '#7c3aed', '#db2777', '#d97706', '#0891b2'];
   const randomColor = colors[users.length % colors.length];
-
+ 
   const newUser = {
     id: 'usr-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
     fullName,
@@ -156,25 +214,25 @@ export const registerUser = function (userData) {
     allowanceCycle: userData.allowanceCycle || 'Weekly',
     budgetGoal: Number(userData.budgetGoal) > 0 ? Number(userData.budgetGoal) : 1500,
     avatarColor: randomColor,
-    createdAt: new Date().toISOString().split('T')[0],
+    createdAt: todayISO(),
   };
-
+ 
   users.push(newUser);
   saveStoredUsers(users);
-
+ 
   state.currentUser = { ...newUser };
   state.transactions = [];
   persistCurrentUserTransactions();
   calculateTotals();
-
+ 
   try {
     localStorage.setItem(SESSION_STORAGE_KEY, newUser.id);
   } catch (e) {}
-
+ 
   state.currentPage = 'dashboard';
   return state.currentUser;
 };
-
+ 
 /**
  * Log in an existing student account
  * @param {string} email 
@@ -184,25 +242,25 @@ export const loginUser = function (email, password) {
   const cleanEmail = (email || '').trim().toLowerCase();
   if (!cleanEmail) throw new Error('Please enter your email address.');
   if (!password) throw new Error('Please enter your password.');
-
+ 
   const users = getStoredUsers();
   const user = users.find((u) => u.email.toLowerCase() === cleanEmail && u.password === password);
-
+ 
   if (!user) {
     throw new Error('Invalid email or password. Please check your credentials or create a new account.');
   }
-
+ 
   state.currentUser = { ...user };
   loadUserTransactions(user.id);
   state.currentPage = 'dashboard';
-
+ 
   try {
     localStorage.setItem(SESSION_STORAGE_KEY, user.id);
   } catch (e) {}
-
+ 
   return state.currentUser;
 };
-
+ 
 /**
  * Log out current student
  */
@@ -215,20 +273,20 @@ export const logoutUser = function () {
     localStorage.removeItem(SESSION_STORAGE_KEY);
   } catch (e) {}
 };
-
+ 
 /**
  * Update current user's profile information
  * @param {Object} profileUpdates 
  */
 export const updateUserProfile = function (profileUpdates) {
   if (!state.currentUser) throw new Error('No active user session.');
-
+ 
   const fullName = (profileUpdates.fullName || '').trim();
   const email = (profileUpdates.email || '').trim().toLowerCase();
-
+ 
   if (!fullName) throw new Error('Full Name cannot be empty.');
   if (!email || !email.includes('@')) throw new Error('Please provide a valid email address.');
-
+ 
   const users = getStoredUsers();
   const emailConflict = users.find(
     (u) => u.email.toLowerCase() === email && u.id !== state.currentUser.id
@@ -236,12 +294,12 @@ export const updateUserProfile = function (profileUpdates) {
   if (emailConflict) {
     throw new Error('That email address is already in use by another account.');
   }
-
+ 
   const budgetGoal = Number(profileUpdates.budgetGoal);
   if (isNaN(budgetGoal) || budgetGoal < 0) {
     throw new Error('Spending budget goal must be a valid non-negative number.');
   }
-
+ 
   const updatedUser = {
     ...state.currentUser,
     fullName,
@@ -253,25 +311,54 @@ export const updateUserProfile = function (profileUpdates) {
     budgetGoal: Number(budgetGoal.toFixed(2)),
     avatarColor: profileUpdates.avatarColor || state.currentUser.avatarColor,
   };
-
+ 
   if (profileUpdates.newPassword && profileUpdates.newPassword.trim() !== '') {
     if (profileUpdates.newPassword.length < 6) {
       throw new Error('New password must be at least 6 characters.');
     }
     updatedUser.password = profileUpdates.newPassword;
   }
-
+ 
   const idx = users.findIndex((u) => u.id === state.currentUser.id);
   if (idx !== -1) {
     users[idx] = updatedUser;
     saveStoredUsers(users);
   }
-
+ 
   state.currentUser = updatedUser;
   calculateTotals();
   return state.currentUser;
 };
-
+ 
+/**
+ * Set the budget for ONE specific period (identified by its start date),
+ * e.g. receive 1500 this week but only budget 1000; next week budget 3000 of 5000.
+ * Pass null/'' to remove the custom budget and use the profile default again.
+ */
+export const setPeriodBudget = function (periodStartISO, amount) {
+  if (!state.currentUser) throw new Error('No active user session.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(periodStartISO || '')) throw new Error('Invalid budget period.');
+ 
+  const budgets = { ...(state.currentUser.periodBudgets || {}) };
+  if (amount === null || amount === '' || amount === undefined) {
+    delete budgets[periodStartISO];
+  } else {
+    const n = Number(amount);
+    if (isNaN(n) || n < 0) throw new Error('Budget must be a valid non-negative number.');
+    budgets[periodStartISO] = Number(n.toFixed(2));
+  }
+ 
+  const updatedUser = { ...state.currentUser, periodBudgets: budgets };
+  const users = getStoredUsers();
+  const idx = users.findIndex((u) => u.id === updatedUser.id);
+  if (idx !== -1) {
+    users[idx] = updatedUser;
+    saveStoredUsers(users);
+  }
+  state.currentUser = updatedUser;
+  calculateTotals();
+};
+ 
 /* ==========================================================================
    3. Navigation & View State
    ========================================================================== */
@@ -281,11 +368,11 @@ export const setPage = function (pageName) {
     state.currentPage = pageName;
   }
 };
-
+ 
 export const setAuthMode = function (mode) {
   state.authMode = mode === 'register' ? 'register' : 'login';
 };
-
+ 
 /* ==========================================================================
    4. Automatic Financial Calculations (Derived Values)
    ========================================================================== */
@@ -296,7 +383,7 @@ export const calculateTotals = function () {
   let expenseCount = 0;
   const expByCat = {};
   const incByCat = {};
-
+ 
   state.transactions.forEach((tx) => {
     const amt = Number(tx.amount) || 0;
     if (tx.type === 'income') {
@@ -311,13 +398,80 @@ export const calculateTotals = function () {
       expByCat[cat] = (expByCat[cat] || 0) + amt;
     }
   });
-
+ 
   const balance = income - expenses;
   const savingsRate = income > 0 ? Math.max(0, ((income - expenses) / income) * 100) : 0;
-  const budgetGoal = state.currentUser ? Number(state.currentUser.budgetGoal) || 1500 : 1500;
-  const budgetRemaining = budgetGoal - expenses;
-  const budgetUsedPercent = budgetGoal > 0 ? Math.min(100, (expenses / budgetGoal) * 100) : 0;
-
+  const defaultBudget = state.currentUser ? Number(state.currentUser.budgetGoal) || 1500 : 1500;
+  const customBudgets = state.currentUser?.periodBudgets || {};
+  // Each period can have its own budget; otherwise the profile default is used.
+  const budgetFor = (startISO) =>
+    customBudgets[startISO] !== undefined ? Number(customBudgets[startISO]) : defaultBudget;
+ 
+  // Budget is measured against the CURRENT period only (e.g. this week).
+  const period = currentPeriod();
+  const budgetGoal = budgetFor(period.start);
+  const incomeIn = (a, b) =>
+    state.transactions
+      .filter((tx) => tx.type === 'income' && tx.date >= a && tx.date <= b)
+      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+  // Savings from one period: money received but not budgeted (excess),
+  // plus (once the period is over) budget that was left unspent.
+  const savedFrom = (inc, bud, spent, completed) =>
+    Math.max(0, inc - bud) + (completed ? Math.max(0, bud - spent) : 0);
+  const spentIn = (a, b) =>
+    state.transactions
+      .filter((tx) => tx.type !== 'income' && tx.date >= a && tx.date <= b)
+      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+  const periodExpenses = spentIn(period.start, period.end);
+  const budgetRemaining = budgetGoal - periodExpenses;
+  const budgetUsedPercent = budgetGoal > 0 ? Math.min(100, (periodExpenses / budgetGoal) * 100) : 0;
+ 
+  const cycle = state.currentUser?.allowanceCycle || 'Weekly';
+  const prev = getPeriod(cycle, addDays(fromISO(period.start), -1), state.currentUser?.createdAt || null);
+  const prevSpent = spentIn(prev.start, prev.end);
+  const prevGoal = budgetFor(prev.start);
+  const nextP = getPeriod(cycle, addDays(fromISO(period.end), 1), state.currentUser?.createdAt || null);
+  // History of up to 6 previous periods (stops before the first transaction)
+  const earliest = state.transactions.reduce((m, tx) => (tx.date < m ? tx.date : m), period.start);
+  const history = [];
+  let cursor = prev;
+  while (history.length < 6 && cursor.end >= earliest) {
+    const spent = spentIn(cursor.start, cursor.end);
+    history.push({
+      start: cursor.start,
+      end: cursor.end,
+      spent: Number(spent.toFixed(2)),
+      goal: Number(budgetFor(cursor.start).toFixed(2)),
+      income: Number(incomeIn(cursor.start, cursor.end).toFixed(2)),
+      custom: customBudgets[cursor.start] !== undefined,
+      left: Number((budgetFor(cursor.start) - spent).toFixed(2)),
+      saved: Number(
+        savedFrom(incomeIn(cursor.start, cursor.end), budgetFor(cursor.start), spent, true).toFixed(2)
+      ),
+    });
+    cursor = getPeriod(cycle, addDays(fromISO(cursor.start), -1), state.currentUser?.createdAt || null);
+  }
+  state.periodHistory = history;
+ 
+  // Total savings across every period since the first transaction
+  let excessSaved = 0;
+  let leftoverSaved = 0;
+  if (state.transactions.length > 0) {
+    let c = getPeriod(cycle, fromISO(earliest), state.currentUser?.createdAt || null);
+    for (let i = 0; i < 520 && c.start <= period.start; i++) {
+      const completed = c.start < period.start;
+      const inc = incomeIn(c.start, c.end);
+      const bud = budgetFor(c.start);
+      excessSaved += Math.max(0, inc - bud);
+      if (completed) leftoverSaved += Math.max(0, bud - spentIn(c.start, c.end));
+      c = getPeriod(cycle, addDays(fromISO(c.end), 1), state.currentUser?.createdAt || null);
+    }
+  }
+  const rawSavings = excessSaved + leftoverSaved;
+  // Savings can never be more than the money you actually still have
+  const savingsTotal = Math.max(0, Math.min(rawSavings, balance));
+  const periodDaysLeft = Math.round((fromISO(period.end) - fromISO(todayISO())) / 86400000) + 1;
+ 
   state.totals = {
     totalIncome: Number(income.toFixed(2)),
     totalExpenses: Number(expenses.toFixed(2)),
@@ -329,8 +483,41 @@ export const calculateTotals = function () {
     budgetGoal: Number(budgetGoal.toFixed(2)),
     budgetRemaining: Number(budgetRemaining.toFixed(2)),
     budgetUsedPercent: Number(budgetUsedPercent.toFixed(1)),
+    periodExpenses: Number(periodExpenses.toFixed(2)),
+    savings: {
+      total: Number(savingsTotal.toFixed(2)),
+      excess: Number(excessSaved.toFixed(2)),
+      leftover: Number(leftoverSaved.toFixed(2)),
+      capped: rawSavings > savingsTotal,
+      thisPeriodSetAside: Number(Math.max(0, incomeIn(period.start, period.end) - budgetGoal).toFixed(2)),
+    },
+    periodIncome: Number(incomeIn(period.start, period.end).toFixed(2)),
+    periodBudgetCustom: customBudgets[period.start] !== undefined,
+    defaultBudget: Number(defaultBudget.toFixed(2)),
+    nextPeriod: {
+      start: nextP.start,
+      end: nextP.end,
+      budget: Number(budgetFor(nextP.start).toFixed(2)),
+      custom: customBudgets[nextP.start] !== undefined,
+      income: Number(incomeIn(nextP.start, nextP.end).toFixed(2)),
+    },
+    periodStart: period.start,
+    periodEnd: period.end,
+    periodDaysLeft,
+    previousPeriod: {
+      start: prev.start,
+      end: prev.end,
+      spent: Number(prevSpent.toFixed(2)),
+      goal: Number(prevGoal.toFixed(2)),
+      income: Number(incomeIn(prev.start, prev.end).toFixed(2)),
+      custom: customBudgets[prev.start] !== undefined,
+      left: Number((prevGoal - prevSpent).toFixed(2)),
+      saved: Number(savedFrom(incomeIn(prev.start, prev.end), prevGoal, prevSpent, true).toFixed(2)),
+      withinBudget: prevSpent <= prevGoal,
+      hadSpending: prevSpent > 0,
+    },
   };
-
+ 
   state.categoryBreakdown = Object.keys(expByCat)
     .map((category) => {
       const total = expByCat[category];
@@ -342,7 +529,7 @@ export const calculateTotals = function () {
       };
     })
     .sort((a, b) => b.total - a.total);
-
+ 
   state.allowanceBreakdown = Object.keys(incByCat)
     .map((category) => {
       const total = incByCat[category];
@@ -355,7 +542,7 @@ export const calculateTotals = function () {
     })
     .sort((a, b) => b.total - a.total);
 };
-
+ 
 /* ==========================================================================
    5. Transaction CRUD Operations
    ========================================================================== */
@@ -368,7 +555,7 @@ export const addTransaction = function (txData) {
   if (!description) {
     throw new Error('Transaction description cannot be empty.');
   }
-
+ 
   const newTx = {
     id: 'tx-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
     type: txData.type === 'income' ? 'income' : 'expense',
@@ -376,22 +563,22 @@ export const addTransaction = function (txData) {
     description,
     category: txData.category || (txData.type === 'income' ? 'Weekly Allowance' : 'Food & Drinks'),
     paymentMethod: txData.paymentMethod || 'Cash',
-    date: txData.date || new Date().toISOString().split('T')[0],
+    date: txData.date || todayISO(),
     createdAt: Date.now(),
   };
-
+ 
   state.transactions.unshift(newTx);
   calculateTotals();
   persistCurrentUserTransactions();
   return newTx;
 };
-
+ 
 export const editTransaction = function (id, updatedData) {
   const index = state.transactions.findIndex((tx) => tx.id === id);
   if (index === -1) {
     throw new Error('Transaction record not found.');
   }
-
+ 
   const amount = Number(updatedData.amount);
   if (isNaN(amount) || amount <= 0) {
     throw new Error('Amount must be greater than ₱0.00.');
@@ -400,7 +587,7 @@ export const editTransaction = function (id, updatedData) {
   if (!description) {
     throw new Error('Description cannot be empty.');
   }
-
+ 
   state.transactions[index] = {
     ...state.transactions[index],
     amount: Number(amount.toFixed(2)),
@@ -410,12 +597,12 @@ export const editTransaction = function (id, updatedData) {
     date: updatedData.date || state.transactions[index].date,
     updatedAt: Date.now(),
   };
-
+ 
   calculateTotals();
   persistCurrentUserTransactions();
   return state.transactions[index];
 };
-
+ 
 export const deleteTransaction = function (id) {
   const initialLen = state.transactions.length;
   state.transactions = state.transactions.filter((tx) => tx.id !== id);
@@ -426,25 +613,25 @@ export const deleteTransaction = function (id) {
   persistCurrentUserTransactions();
   return true;
 };
-
+ 
 export const getTransactionById = function (id) {
   return state.transactions.find((tx) => tx.id === id) || null;
 };
-
+ 
 export const getAllowances = function () {
   return state.transactions.filter((tx) => tx.type === 'income');
 };
-
+ 
 export const getExpenses = function () {
   return state.transactions.filter((tx) => tx.type === 'expense');
 };
-
+ 
 export const clearAllUserTransactions = function () {
   state.transactions = [];
   calculateTotals();
   persistCurrentUserTransactions();
 };
-
+ 
 /* ==========================================================================
    6. Filtering, Sorting & CSV Export
    ========================================================================== */
@@ -454,10 +641,10 @@ export const setFilter = function (filterUpdates) {
     ...filterUpdates,
   };
 };
-
+ 
 export const getFilteredTransactions = function () {
   const { type, category, searchQuery, sortBy } = state.currentFilter;
-
+ 
   const filtered = state.transactions.filter((tx) => {
     if (type && type !== 'all' && tx.type !== type) return false;
     if (category && category !== 'all' && tx.category !== category) return false;
@@ -470,7 +657,7 @@ export const getFilteredTransactions = function () {
     }
     return true;
   });
-
+ 
   return filtered.sort((a, b) => {
     if (sortBy === 'oldest') {
       return new Date(a.date) - new Date(b.date) || a.createdAt - b.createdAt;
@@ -485,7 +672,7 @@ export const getFilteredTransactions = function () {
     return new Date(b.date) - new Date(a.date) || b.createdAt - a.createdAt;
   });
 };
-
+ 
 export const getAllUniqueCategories = function () {
   const set = new Set();
   state.transactions.forEach((tx) => {
@@ -493,7 +680,7 @@ export const getAllUniqueCategories = function () {
   });
   return Array.from(set).sort();
 };
-
+ 
 export const exportTransactionsCSV = function () {
   const rows = [
     ['Date', 'Type', 'Category', 'Description', 'Payment Method', 'Amount (PHP)'],
@@ -511,3 +698,4 @@ export const exportTransactionsCSV = function () {
   });
   return rows.map((r) => r.join(',')).join('\n');
 };
+ 

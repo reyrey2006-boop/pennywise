@@ -8,10 +8,10 @@
  * - Readable date formatting
  * - HTML escaping for security
  */
-
+ 
 export default class View {
   _data;
-
+ 
   /**
    * Render the received data to the DOM
    * @param {Object|Array} data The data to be rendered
@@ -24,7 +24,7 @@ export default class View {
       this._parentElement.insertAdjacentHTML('afterbegin', markup);
     }
   }
-
+ 
   /**
    * Clear parent container innerHTML
    * @protected
@@ -34,7 +34,7 @@ export default class View {
       this._parentElement.innerHTML = '';
     }
   }
-
+ 
   /**
    * Format numbers as Philippine Peso (₱)
    * @param {number} amount 
@@ -49,7 +49,7 @@ export default class View {
       maximumFractionDigits: 2,
     });
   }
-
+ 
   /**
    * Format ISO date string (YYYY-MM-DD) into readable format
    * @param {string} dateString 
@@ -76,7 +76,20 @@ export default class View {
       year: 'numeric',
     });
   }
-
+ 
+  /** Today's date as local YYYY-MM-DD (toISOString is UTC and can be a day off) */
+  todayISO() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+ 
+  /** Format an ISO date range like "Nov 2 – Nov 8, 2026" */
+  formatRange(startISO, endISO) {
+    if (startISO === endISO) return this.formatDate(startISO);
+    return `${this.formatDate(startISO)} – ${this.formatDate(endISO)}`;
+  }
+ 
   /**
    * Escape HTML special characters to prevent XSS
    * @param {string} str 
@@ -91,7 +104,7 @@ export default class View {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
   }
-
+ 
   /**
    * Get initials from full name
    * @param {string} name 
@@ -104,3 +117,4 @@ export default class View {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 }
+ 
