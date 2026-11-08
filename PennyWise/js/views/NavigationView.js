@@ -232,5 +232,29 @@ class NavigationView extends View {
       overlay.addEventListener('click', () => this._closeMobileDrawer());
     }
   }
+addHandlerLogout(handler) {
+    if (!this._sidebarElement) return;
+    this._sidebarElement.addEventListener('click', (e) => {
+      const logoutBtn = e.target.closest('#btn-sidebar-logout');
+      if (logoutBtn) {
+        this._closeMobileDrawer();
+        handler();
+      }
+    });
+  }
+
+  _openMobileDrawer() {
+    this._sidebarElement?.classList.add('sidebar-open');
+    document.querySelector('#sidebar-overlay')?.classList.remove('hidden');
+  }
+
+  _closeMobileDrawer() {
+    this._sidebarElement?.classList.remove('sidebar-open');
+    document.querySelector('#sidebar-overlay')?.classList.add('hidden');
+  }
+}
+
+export default new NavigationView();
+
 
   
